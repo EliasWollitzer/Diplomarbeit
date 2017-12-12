@@ -1,12 +1,17 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "entry.h"
+#include <QList>
+
+QList <Entry> list;
+int k = 0;
 
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+       ui->setupUi(this);
 }
 
 MainWindow::~MainWindow()
@@ -55,4 +60,35 @@ void MainWindow::get_init(){
     //reply->deleteLater();
     QJsonDocument json = QJsonDocument::fromJson(response_data);
     qDebug() << "get_init: " << json;
+
+    QJsonArray arr = json.array();
+
+    list = new QList();
+    Entry e;
+
+    for(int i = 0; i < arr.size(); i++){
+        e = new Entry();
+        QJsonObject o = arr.at(i).toObject();
+
+        e.set_fName(o.find("firstname"));
+        e.set_lname(o.find("lastname"));
+        e.set_resource(o.find("resource"));
+
+        QString sdate = o.find("reserved");
+        int y =  sdate.mid(0,4).toInt();
+        int m = sdate.mid(5,2).toInt();
+        int d = sdate.mid(8,2).toInt();
+        QDate d = new QDate(y,m,d);
+        e.set_date(d);
+
+        list.insert(i,&e);
+    }
+
+
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    ui->label->setText(list.at(k).get_resource());
+    k++;
 }

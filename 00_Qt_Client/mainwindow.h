@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QtCore>
 #include <QString>
+#include <QDate>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -13,6 +14,11 @@
 #include <QByteArray>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QtGui>
+#include <QStandardItemModel>
+#include <QStandardItem>
+
+
 
 namespace Ui {
 class MainWindow;
@@ -30,6 +36,8 @@ private slots:
     void on_calendarWidget_clicked(const QDate &date);
     void http_get_list(QString date);
     void get_init();
+
+    void on_pushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
