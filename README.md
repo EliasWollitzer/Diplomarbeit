@@ -1,2 +1,1 @@
 # Diplomarbeit
-Matura Projekt : Reservierungssystem
