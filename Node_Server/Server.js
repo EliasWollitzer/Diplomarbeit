@@ -19,18 +19,31 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.get('/hello', function(req, res){// pfad localhost:8080/hello
     res.send("Hello World");
 });
-/*
-var con = mysql.createConnection({
-    host:'localhost',
-    user:'root',
-    password:'root',
-    database:'new_schema'
+//SQL_Get von Client
+app.get('/sql_get',urlencodedParser,function(req, res){
+    console.log("Get String: "+JSON.stringify(req.query));
+
+    var sqlquery = "SELECT * FROM serverTable";
+    
+    con.query(sqlquery, function (err, result) {
+        if (err) throw err;
+        console.log("Table Sent");
+        res.send(result)
+    });
+
 });
 
-con.connect(function(err) {
-    if (err) throw err;
-    console.log("connectet");
+// SQL_Connection
+var con = mysql.createConnection({
+    host:"localhost",
+    user:"root",
+    password:"root",
+    database:"data"
 });
-*/
+
+con.connect(function(err){
+    if(err) throw err;
+    console.log("Connected!")
+});
 
 app.listen(30000);
