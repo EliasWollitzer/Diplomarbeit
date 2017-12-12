@@ -27,7 +27,7 @@ void MainWindow::http_get_list(QString date){
 
 
     QEventLoop eventLoop;
-    QUrl localURL(QString("http://10.8.250.42:30000/sql_get"));
+    QUrl localURL(QString("http://192.168.64.1:30000/sql_get"));
     QNetworkAccessManager mgr;
 
     QUrlQuery qu;
@@ -54,5 +54,5 @@ void MainWindow::get_init(){
     QByteArray response_data = reply->readAll();
     //reply->deleteLater();
     QJsonDocument json = QJsonDocument::fromJson(response_data);
-    qDebug() << "get_init: " << json.toJson();
+    qDebug() << "get_init: " << json;
 }
