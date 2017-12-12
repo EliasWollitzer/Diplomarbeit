@@ -20,7 +20,7 @@ app.get('/hello', function(req, res){// pfad localhost:8080/hello
     res.send("Hello World");
 });
 //SQL_Get von Client
-app.get('/sql_get',urlencodedParser,function(req, res){
+app.get('/sql_get',function(req, res){
     console.log("Get String: "+JSON.stringify(req.query));
 
     var sqlquery = "SELECT * FROM serverTable";
@@ -28,11 +28,13 @@ app.get('/sql_get',urlencodedParser,function(req, res){
     con.query(sqlquery, function (err, result) {
         if (err) throw err;
         console.log("Table Sent");
-        res.send(result)
+        var x = JSON.stringify(result)
+        var y = JSON.parse(x)
+        res.send(y)
     });
 
 });
-
+app.listen(30000);
 // SQL_Connection
 var con = mysql.createConnection({
     host:"localhost",
@@ -46,4 +48,3 @@ con.connect(function(err){
     console.log("Connected!")
 });
 
-app.listen(30000);
