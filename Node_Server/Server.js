@@ -9,6 +9,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
   })); 
+  eine geänderte änderung
 /*
 var con = mysql.createConnection({
     host:'localhost',
