@@ -3,9 +3,6 @@
 #include "entry.h"
 #include <QList>
 
-QList <Entry> list;
-int k = 0;
-
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -32,7 +29,7 @@ void MainWindow::http_get_list(QString date){
 
 
     QEventLoop eventLoop;
-    QUrl localURL(QString("http://192.168.64.1:30000/sql_get"));
+    QUrl localURL(QString("http://10.8.250.22:30000/sql_get"));
     QNetworkAccessManager mgr;
 
     QUrlQuery qu;
@@ -59,11 +56,13 @@ void MainWindow::get_init(){
     QByteArray response_data = reply->readAll();
     //reply->deleteLater();
     QJsonDocument json = QJsonDocument::fromJson(response_data);
-    qDebug() << "get_init: " << json;
+    //qDebug() << "get_init: " << json;
 
     QJsonArray arr = json.array();
 
-    list = new QList();
+    qDebug() << "array: " << arr;
+
+  /*  list = new <Entry> QList();
     Entry e;
 
     for(int i = 0; i < arr.size(); i++){
@@ -72,7 +71,7 @@ void MainWindow::get_init(){
 
         e.set_fName(o.find("firstname"));
         e.set_lname(o.find("lastname"));
-        e.set_resource(o.find("resource"));
+        e.set_ressource(o.find("resource"));
 
         QString sdate = o.find("reserved");
         int y =  sdate.mid(0,4).toInt();
@@ -83,12 +82,12 @@ void MainWindow::get_init(){
 
         list.insert(i,&e);
     }
-
+*/
 
 }
 
-void MainWindow::on_pushButton_clicked()
+
+void MainWindow::on_newRessource_clicked()
 {
-    ui->label->setText(list.at(k).get_resource());
-    k++;
+    //ui->label->setText(list.at(k).get_resource());
 }

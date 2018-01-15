@@ -10,26 +10,28 @@ class Entry : public QObject
 public:
     Entry();
 
+    QString getFname() const;
+    void setFname(const QString &value);
+
+    QString getLname() const;
+    void setLname(const QString &value);
+
+    QString getRessoure() const;
+    void setRessoure(const QString &value);
+
+    QDate getDate() const;
+    void setDate(const QDate &value);
+
 signals:
 
 public slots:
-    QString get_fname();
-    void set_fname(QString &value);
 
-    QString get_lname();
-    void set_lname(QString &value);
-
-    QString get_resource();
-    void set_resource(QString &value);
-
-    QDate get_date();
-    void set_date(QDate &value);
 
 
 private:
     QString fname;
     QString lname;
-    QString resoure;
+    QString ressoure;
     QDate date;
 };
 
