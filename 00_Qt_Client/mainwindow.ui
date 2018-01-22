@@ -21,7 +21,14 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QTableWidget" name="tableWidget"/>
+       <widget class="QTableView" name="tableView"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="newRessource">

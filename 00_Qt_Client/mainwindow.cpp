@@ -1,8 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "entry.h"
+#include "entrymodel.h"
 #include <QList>
+#include <QHeaderView>
 
+//EntryModel* model;
+QList <Entry*> list;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -45,7 +49,7 @@ void MainWindow::http_get_list(QString date){
 
     connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     connect(reply, SIGNAL (finished()), this , SLOT(get_init()));
-
+    //connect(reply, SIGNAL (finished()), this , SLOT(EntryModel::setTableConditions()));
 
     eventLoop.exec();
 }
@@ -61,6 +65,35 @@ void MainWindow::get_init(){
     QJsonArray arr = json.array();
 
     qDebug() << "array: " << arr;
+
+    EntryModel* model = EntryModel::getInstance();//model->getInstance();
+
+    model->setTableConditions(ui->tableView, arr);
+    model->formArray(arr);
+
+
+
+
+
+    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    //ui->tableView->setColumnWidth(0,20);
+
+
+
+    //QList <Entry*> l = model->entrylist;
+
+    ui->tableView->setModel(model);
+    ui->tableView->show();
+
+    //QList <Entry*> l = model->getInstance()->entrylist;
+    //ui->label->setText(model->getInstance().at(k)->toString());
+
+/*
+    for(int i = 0; i < 3; i++){
+        ui->tableView->setColumnWidth(i,82);
+    }
+*/
+    //ui->tableView->setItemDelegateForRow(1,QAbstractItemDelegate
 
   /*  list = new <Entry> QList();
     Entry e;
@@ -89,5 +122,13 @@ void MainWindow::get_init(){
 
 void MainWindow::on_newRessource_clicked()
 {
-    //ui->label->setText(list.at(k).get_resource());
+
+
 }
+
+/*
+void MainWindow::on_tableView_clicked(const QModelIndex &index)
+{
+    //qDebug() << "onTableViewClicked" << index.row();
+}
+*/

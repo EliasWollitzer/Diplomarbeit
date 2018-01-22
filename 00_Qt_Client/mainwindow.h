@@ -37,9 +37,9 @@ private slots:
     void http_get_list(QString date);
     void get_init();
 
-    void on_pushButton_clicked();
-
     void on_newRessource_clicked();
+
+    void on_tableView_clicked(const QModelIndex &index);
 
 private:
     Ui::MainWindow *ui;
