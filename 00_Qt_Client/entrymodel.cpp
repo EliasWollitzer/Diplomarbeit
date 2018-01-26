@@ -1,7 +1,8 @@
 #include "entrymodel.h"
 
-static int b = 1;
+
 EntryModel* EntryModel::model = nullptr;
+
 
 EntryModel::EntryModel(QObject *parent) : QAbstractTableModel(parent), entrylist()
 {
@@ -35,11 +36,6 @@ QVariant EntryModel::data(const QModelIndex &index, int role) const
        return QVariant();
     }
 
-    if(index.row() > 3){
-        //0qDebug() << "data" << index.row()+"";
-        return "";
-    }
-
     switch(c){
         case 0: return entrylist.at(r)->getRessource();
                 break;
@@ -53,30 +49,76 @@ QVariant EntryModel::data(const QModelIndex &index, int role) const
     return "";
 }
 
-void EntryModel::setTableConditions(QTableView *tv, QJsonArray arr){
-    tableview = tv;
+QVariant EntryModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    if(role != Qt::DisplayRole || orientation != Qt::Horizontal){
+        return QVariant();
+    }
+
+    return this->getColumnName(section);
+}
+
+
+
+QString EntryModel::getColumnName(int section) const{
+
+    switch (section) {
+    case 0:
+        return "Ressource";
+    case 1:
+        return "Von";
+    case 2:
+        return "Bis";
+    }
+    return "";
+}
+
+void EntryModel::http_get_list(QString date){
+
+    QEventLoop eventLoop;
+    QUrl localURL(QString("http://10.8.250.22:30000/sql_get"));
+    QNetworkAccessManager mgr;
+
+    QUrlQuery qu;
+    qu.addQueryItem("date", date.toLatin1());
+    qDebug() << "http_get_list: " << qu.toString();
+
+    localURL.setQuery(qu);
+    QNetworkRequest request(localURL);
+
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QNetworkReply *reply = mgr.get(request); // GET
+
+
+    connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
+    connect(reply, SIGNAL (finished()), this , SLOT(init_list()));
+
+    eventLoop.exec();
+}
+
+void EntryModel::init_list(){
+
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+
+    QByteArray response_data = reply->readAll();
+
+    QJsonDocument json = QJsonDocument::fromJson(response_data);
+
+    QJsonArray arr = json.array();
+
+    //qDebug() << "array: " << arr;
+
     rows = arr.size();
     columns = 3;
 
-    qDebug() << "EntryModel" << "setTableConditions";
-/*
-    tableview->setColumnWidth(0,100);
-    tableview->setColumnWidth(1,50);
-    tableview->setColumnWidth(2,50);
-*/
 
-
-}
-
-void EntryModel::formArray(QJsonArray array){
     qDebug() << &entrylist << endl;
 
     entrylist.clear();
 
-    for(int i = 0; i < array.size(); i++){
+    for(int i = 0; i < arr.size(); i++){
         Entry* e = new Entry();
 
-        QJsonObject o = array.at(i).toObject();
+        QJsonObject o = arr.at(i).toObject();
         e->setFname(o.value("firstName").toString());
         e->setLname(o.value("lastName").toString());
         e->setRessource(o.value("resource").toString());
@@ -97,8 +139,13 @@ void EntryModel::formArray(QJsonArray array){
         qDebug() << "formArray" << entrylist[i]->toString();
     }
 
-    //this->entrylist = list;
-}
 
+//BBBBBBBBBBBBBBBBBBBBBBBB
+
+
+
+
+
+}
 
 

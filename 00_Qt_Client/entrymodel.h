@@ -13,31 +13,35 @@ class EntryModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit EntryModel(QObject *parent = nullptr);
-
     static EntryModel* getInstance();
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const ;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-
-    QTableView *tableview;
-    void setTableConditions(QTableView *tv, QJsonArray arr);
-    void formArray(QJsonArray array);
-
-    //QList <Entry*> entrylist;
-
-private:
+    //TableModel functions
     int rows;
     int columns;
-    //QJsonArray array;
-    QList <Entry*> entrylist;
 
-    static EntryModel* model;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const ;     //Pushes rows to the model
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;   //Pushes columns to the model
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;  //Sets data in the model
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const ; //Sets column names
+
+
+    void http_get_list(QString date);   //Sends a GET request with the date to the server
+
+
+private:
+
+    explicit EntryModel(QObject *parent = nullptr); //Private constructor for singleton
+    static EntryModel* model;   //Singleton
+
+    QList <Entry*> entrylist;   //EntryList
+
+    QString getColumnName(int section) const;
 
 signals:
 
-public slots:
+private slots:
+    void init_list();   //Converts JSON to List of Entrys
 };
 
 #endif // ENTRYMODEL_H

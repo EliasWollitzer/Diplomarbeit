@@ -34,8 +34,7 @@ public:
 
 private slots:
     void on_calendarWidget_clicked(const QDate &date);
-    void http_get_list(QString date);
-    void get_init();
+    void setTableConditions();
 
     void on_newRessource_clicked();
 

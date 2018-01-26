@@ -2,7 +2,7 @@
 #define ENTRY_H
 
 #include <mainwindow.h>
-#include <QObject>
+
 
 class Entry : public QObject
 {
