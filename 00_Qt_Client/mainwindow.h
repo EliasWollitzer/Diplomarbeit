@@ -36,7 +36,7 @@ private slots:
     void on_calendarWidget_clicked(const QDate &date);
     void setTableConditions();
 
-    void on_newRessource_clicked();
+    void on_newEntryButton_clicked();
 
     void on_tableView_clicked(const QModelIndex &index);
 

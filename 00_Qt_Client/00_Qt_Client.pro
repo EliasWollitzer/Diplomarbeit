@@ -30,12 +30,16 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     entry.cpp \
-    entrymodel.cpp
+    entrymodel.cpp \
+    newentry.cpp
 
 HEADERS += \
         mainwindow.h \
     entry.h \
-    entrymodel.h
+    entrymodel.h \
+    newentry.h \
+    newentry.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    newentry.ui

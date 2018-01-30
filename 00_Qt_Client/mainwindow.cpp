@@ -4,8 +4,12 @@
 #include "entrymodel.h"
 #include <QList>
 #include <Qt>
+#include "newentry.h"
+#include <QApplication>
+
 
 EntryModel* model;
+NewEntry* ne;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -32,12 +36,15 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
 
 
 
-void MainWindow::on_newRessource_clicked()
+void MainWindow::on_newEntryButton_clicked()
 {
     QDateTime *dt = new QDateTime();
     dt->setDate(QDate::currentDate());
     dt->setTime(QTime::currentTime());
     qDebug() << "datetime" << dt->toString();
+
+    ne = new NewEntry(this);
+    ne->show();
 }
 
 void MainWindow::setTableConditions(){
