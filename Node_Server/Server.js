@@ -24,7 +24,7 @@ app.get('/sql_get', function (req, res) {
     var datesp = date.split("-");
     console.log("searched Date"+ datesp);
 
-    var sqlquery = "SELECT firstName FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep "+
+    var sqlquery = "SELECT * FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep "+
     "on Bor.Pid = Per.Pid and Bor.Rid = Res.Rid and Dep.Did = Per.Did "+
     "WHERE '"+datesp[0]+"'= year(Bor.datefrom) AND '"+datesp[1]+"'= month(Bor.datefrom) AND '"+datesp[2]+"'= day(Bor.datefrom)";;
     
@@ -34,15 +34,22 @@ app.get('/sql_get', function (req, res) {
         console.log("Table Sent"+result);
         var x = JSON.stringify(result)
         var y = JSON.parse(x)
+        console.log(y);
         res.send(y)
     });
 });
 //----------------------------------------SQL_Post von Client
 app.post("/sql_post/persons", function (req, res) {
+    let Pid;
     console.log("POST req: "+JSON.stringify(req.body));
-
-    insertSQL_Persons(req.body);
-    res.send("Insert Done");
+    if( ){
+        insertSQL_Persons(req.body);
+        Pid = selectPid_SQL(req.body); //Wenn Name neu
+    } else {
+        Pid = selectPid_SQL(req.body); //Wenn Name doppelt
+    }
+    
+    res.send(Pid);
 });
 app.post("/sql_post/borrowed", function (req, res) {
     console.log("POST req: "+JSON.stringify(req.body));
@@ -62,6 +69,13 @@ app.post("/sql_post/department", function (req, res) {
     insertSQL_Department(req.body);
     res.send("Insert Done");
 });
+//-----------------------------------------PATCH von Client: SQL_Update
+app.patch("/sql_update/borrowed", function (req, res) {
+    console.log("PATCH req: "+JSON.stringify(req.body));
+
+    updateSQL_Borrowed(req.body);
+    res.send("Update Done");
+});
 //----------------------------------------- SQL_Connection
 var con = mysql.createConnection({
     host: "localhost",
@@ -74,6 +88,60 @@ con.connect(function (err) {
     if (err) throw err;
     console.log("Connected!")
 });
+//------------------------------------------select methods: ID suchen
+
+function isPersonDouble(req){ //wenn Person doppelt = 1
+    var query;
+    
+    query = "SELECT Pid from Persons"+
+         "WHERE firstName = " + JSON.stringify(req.firstName).slice(1,-1) + ";";
+         
+         console.log("SQLQuery: "+query);
+         con.query(sqlquery, function (err, result) {
+            if (err) throw err;
+            console.log("SQL result: "+result);
+            var x = JSON.stringify(result)
+            var y = JSON.parse(x)
+            console.log("SQL result geparsed: "+y.Pid);
+            res.send(y)
+            return(y.Pid);
+        });
+}
+
+function selectPid_SQL(req){ // return Pid 
+    var query;
+    console.log("SQL_Select_Persons: " + JSON.stringify(req));
+
+    query = "SELECT Pid from Persons"+
+         "WHERE firstName = " + JSON.stringify(req.firstName).slice(1,-1) + ";";
+         
+         console.log("SQLQuery: "+query);
+         con.query(sqlquery, function (err, result) {
+            if (err) throw err;
+            console.log("SQL result: "+result);
+            var x = JSON.stringify(result)
+            var y = JSON.parse(x)
+            console.log("SQL result geparsed: "+y.Pid);
+            res.send(y)
+            return(y.Pid);
+        });
+}
+//------------------------------------------patch methods
+function updateSQL_Borrowed(req){ // Nur Termin
+    var query;
+    console.log("SQL_Update_Borrowed: " + JSON.stringify(req));
+
+    query = "UPDATE Borrowed"+
+    " SET datefrom = '"+JSON.stringify(req.datefrom).slice(1,-1)+"'," +
+         "dateto = '"+JSON.stringify(req.dateto).slice(1,-1) + "' " +
+         "WHERE Entid = "+JSON.stringify(req.Entid).slice(1,-1) + ";"
+         
+         console.log("SQLQuery: "+query);
+         con.query(query, function (err, result) {
+             if (err) throw err;
+             console.log("Update Datefrom, Dateto at ID: "+JSON.stringify(req.Entid)+" done");
+         });
+}
 //------------------------------------------insert methods
 function insertSQL_Persons(req) {
     var query;
