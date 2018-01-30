@@ -5,24 +5,29 @@ Entry::Entry()
 
 }
 
-QString Entry::getFname() const
-{
-    return fname;
+
+QString Entry::toString(){
+    return firstName + lastName + description + ressource + datefrom.toString() + dateto.toString();
 }
 
-void Entry::setFname(const QString &value)
+QString Entry::getFirstName() const
 {
-    fname = value;
+    return firstName;
 }
 
-QString Entry::getLname() const
+void Entry::setFirstName(const QString &value)
 {
-    return lname;
+    firstName = value;
 }
 
-void Entry::setLname(const QString &value)
+QString Entry::getLastName() const
 {
-    lname = value;
+    return lastName;
+}
+
+void Entry::setLastName(const QString &value)
+{
+    lastName = value;
 }
 
 QString Entry::getRessource() const
@@ -35,17 +40,52 @@ void Entry::setRessource(const QString &value)
     ressource = value;
 }
 
-QDate Entry::getDate() const
+QDateTime Entry::getDatefrom() const
 {
-    return date;
+    return datefrom;
 }
 
-void Entry::setDate(const QDate &value)
+void Entry::setDatefrom(const QDateTime &value)
 {
-    date = value;
+    datefrom = value;
 }
 
-QString Entry::toString(){
-    return fname + " " + lname + " " + ressource + " " + date.toString();
+QDateTime Entry::getDateto() const
+{
+    return dateto;
 }
 
+void Entry::setDateto(const QDateTime &value)
+{
+    dateto = value;
+}
+
+QString Entry::getEntlID() const
+{
+    return entlID;
+}
+
+void Entry::setEntlID(const QString &value)
+{
+    entlID = value;
+}
+
+QString Entry::getDescription() const
+{
+    return description;
+}
+
+void Entry::setDescription(const QString &value)
+{
+    description = value;
+}
+
+QString Entry::getSection() const
+{
+    return section;
+}
+
+void Entry::setSection(const QString &value)
+{
+    section = value;
+}

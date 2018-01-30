@@ -31,15 +31,18 @@ SOURCES += \
         mainwindow.cpp \
     entry.cpp \
     entrymodel.cpp \
-    newentry.cpp
+    newentry.cpp \
+    login.cpp
 
 HEADERS += \
         mainwindow.h \
     entry.h \
     entrymodel.h \
     newentry.h \
-    newentry.h
+    newentry.h \
+    login.h
 
 FORMS += \
         mainwindow.ui \
-    newentry.ui
+    newentry.ui \
+    login.ui

@@ -10,19 +10,33 @@ class Entry : public QObject
 public:
     Entry();
 
-    QString getFname() const;
-    void setFname(const QString &value);
 
-    QString getLname() const;
-    void setLname(const QString &value);
+
+    QString toString();
+
+    QString getFirstName() const;
+    void setFirstName(const QString &value);
+
+    QString getLastName() const;
+    void setLastName(const QString &value);
 
     QString getRessource() const;
     void setRessource(const QString &value);
 
-    QDate getDate() const;
-    void setDate(const QDate &value);
+    QDateTime getDatefrom() const;
+    void setDatefrom(const QDateTime &value);
 
-    QString toString();
+    QDateTime getDateto() const;
+    void setDateto(const QDateTime &value);
+
+    QString getEntlID() const;
+    void setEntlID(const QString &value);
+
+    QString getDescription() const;
+    void setDescription(const QString &value);
+
+    QString getSection() const;
+    void setSection(const QString &value);
 
 signals:
 
@@ -31,10 +45,15 @@ public slots:
 
 
 private:
-    QString fname;
-    QString lname;
+    QString firstName;
+    QString lastName;
     QString ressource;
-    QDate date;
+    QString section;
+    QString description;
+    QString entlID;
+    QDateTime datefrom;
+    QDateTime dateto;
+
 };
 
 #endif // ENTRY_H

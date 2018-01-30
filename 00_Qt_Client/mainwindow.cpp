@@ -6,10 +6,12 @@
 #include <Qt>
 #include "newentry.h"
 #include <QApplication>
+#include "login.h"
+
 
 
 EntryModel* model;
-NewEntry* ne;
+Login* l;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -43,8 +45,8 @@ void MainWindow::on_newEntryButton_clicked()
     dt->setTime(QTime::currentTime());
     qDebug() << "datetime" << dt->toString();
 
-    ne = new NewEntry(this);
-    ne->show();
+    l = new Login();
+    l->show();
 }
 
 void MainWindow::setTableConditions(){

@@ -18,6 +18,9 @@ public:
     //TableModel functions
     int rows;
     int columns;
+    static QString url;
+    QList <QString> ressourceList;
+
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const ;     //Pushes rows to the model
     int columnCount(const QModelIndex &parent = QModelIndex()) const;   //Pushes columns to the model
@@ -27,6 +30,11 @@ public:
 
 
     void http_get_list(QString date);   //Sends a GET request with the date to the server
+    void http_get_ressources();
+    void http_post_entry(Entry* e);
+
+    QDateTime stringToDateTime(QString sdate);
+    QString dateToString(QDate d);
 
 
 private:
@@ -42,6 +50,7 @@ signals:
 
 private slots:
     void init_list();   //Converts JSON to List of Entrys
+    void init_ressources();
 };
 
 #endif // ENTRYMODEL_H
