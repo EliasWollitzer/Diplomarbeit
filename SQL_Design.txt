@@ -1,0 +1,72 @@
+drop table Persons;
+ drop table Borrowed;
+ drop table Resources;
+ drop table Department;
+   /*
+create table Persons(
+Pid INT NOT NULL auto_increment,
+Did INT NOT NULL ,
+primary key (Pid,Did), 
+firstName VARCHAR(20),
+lastName VARCHAR(20)
+);
+
+ create table Borrowed(
+Entid INT NOT NULL auto_increment,
+Pid INT NOT NULL,
+Rid INT NOT NULL,
+primary key (Entid,Pid,Rid),  
+description VARCHAR(30),
+datefrom DATE,
+dateto DATE
+);
+ create table Resources(
+Rid INT NOT NULL auto_increment,
+primary key (Rid),
+resource VARCHAR(30)
+);
+
+ create table Department(
+Did INT NOT NULL auto_increment,
+primary key (Did),
+section VARCHAR(30)
+);
+*//*
+
+
+ insert into Persons
+ (Did,firstName,lastName)
+ values
+ ('1','Elias','Wollitzer'),
+ ('1','Sep','Aigner'),
+ ('2','Franz','Mustermann'),
+ ('2','Hans','Wurst');
+
+ 
+  insert into Borrowed
+ (Pid,Rid,description,datefrom,dateto)
+ values
+ ('3','1','Besuch','2017-12-12','2018-01-02'),
+ ('3','1','Besprechung','2018-01-14','2018-01-18'),
+('1','2','Seminar','2018-01-22','2018-01-24');
+
+insert into Resources
+ (resource)
+ values
+ ('BesprechungsRaum 1'),
+ ('BesprechungsRaum 2'),
+ ('BesprechungsRaum 3');
+
+ insert into Department
+ (section)
+ values
+ ('Hardware'),
+ ('Software');
+ // Statements:
+ // SQL GET gesucht nach Datum
+  SELECT * 
+ FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep
+ on Bor.Pid = Per.Pid
+ and Bor.Rid = Res.Rid
+ and Dep.Did=Per.Did 
+ WHERE '2017'= year(datefrom) AND '12'= month(datefrom) AND '12'= day(datefrom);
