@@ -55,22 +55,6 @@ app.get('/sql_get/resources', function (req, res) {
 });
 //----------------------------------------SQL_Post von Client
 app.post("/sql_post/persons", function (req, res) {
-<<<<<<< HEAD
-    var Pid;
-    console.log("POST PERSONS req: "+JSON.stringify(req.body));
-    console.log("isPersonDouble: "+isPersonDouble(req.body,isDouble,isNew))
-var isDouble = function(req){
-    Pid = selectPid_SQL(req); //Wenn Name doppelt
-    console.log("isDouble: "+Pid);
-    res.send(Pid);
-};
-var isNew = function(req){ // req.body
-    insertSQL_Persons(req);
-    Pid = selectPid_SQL(req); //Wenn Name neu
-    console.log("isNew: "+Pid);
-    res.send(Pid);
-};
-=======
     let Pid;
     console.log("POST PERSONS req: " + JSON.stringify(req.body));
 
@@ -79,7 +63,6 @@ var isNew = function(req){ // req.body
         console.log("isPersonDouble: "+cbPid)
         res.send(""+cbPid) //Personen ID zum Client
     });
->>>>>>> Elias
 });
 
 app.post("/sql_post/borrowed", function (req, res) {
@@ -121,31 +104,6 @@ con.connect(function (err) {
 });
 //------------------------------------------select methods: ID suchen
 
-<<<<<<< HEAD
-var isPersonDouble=function(req,isDouble,isNew){ //wenn Person doppelt = 1
-    var query;
-    var x;
-    var y;
-    var z;
-    query = "SELECT COUNT(firstName) as anz FROM Persons "+
-         "WHERE firstName = '"+ JSON.stringify(req.firstName).slice(1,-1) +"'"+ " and lastName = '"+JSON.stringify(req.lastName).slice(1,-1)+"';";
-         
-         console.log("SQLQuery: "+query);
-         con.query(query, function (err, result) {
-            if (err) throw err;
-            console.log("SQL COUNT(firstName): "+result);
-            x = JSON.stringify(result);
-            y = JSON.parse(x);
-            z = y[0].anz
-            console.log("SQL result ANZ: "+y[0].anz);
-        });
-
-        if(z == 0){
-           isNew(req); //noch kein eintrag
-        } else {
-           isDouble(req);//name bereits eingetragen
-        }
-=======
 var isPersonDouble = function (req, callback) { //wenn Person doppelt = 1
     var query;
     var Pid;
@@ -186,7 +144,6 @@ var isPersonDouble = function (req, callback) { //wenn Person doppelt = 1
             });
         }
     });
->>>>>>> Elias
 }
 
 var selectPid_SQL = function (req, cb) { // return Pid 
@@ -196,22 +153,6 @@ var selectPid_SQL = function (req, cb) { // return Pid
     var Pid;
     console.log("SQL_Select_Persons: " + JSON.stringify(req));
 
-<<<<<<< HEAD
-    query = "SELECT Pid from Persons "+
-         "WHERE firstName = '" + JSON.stringify(req.firstName).slice(1,-1) + "' AND "+
-         "lastName = '" + JSON.stringify(req.lastName).slice(1,-1)+"';"
-         
-         console.log("SQLQuery: "+query);
-         con.query(query, function (err, result) {
-            if (err) throw err;
-            console.log("SQL result: "+result);
-            x = JSON.stringify(result);
-            y = JSON.parse(x);
-            Pid = y[0].Pid
-            console.log("SQL Pid: "+y[0].Pid);
-        });
-        return(Pid);
-=======
     query = "SELECT Pid from Persons " +
         "WHERE firstName = '" + JSON.stringify(req.firstName).slice(1, -1) + "' AND " +
         "lastName = '" + JSON.stringify(req.lastName).slice(1, -1) + "';"
@@ -226,7 +167,6 @@ var selectPid_SQL = function (req, cb) { // return Pid
         console.log("SQL Pid: " + y[0].Pid);
         cb(null, Pid);
     });
->>>>>>> Elias
 }
 //------------------------------------------patch methods
 function updateSQL_Borrowed(req) { // Nur Termin
