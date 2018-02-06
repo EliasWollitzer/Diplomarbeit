@@ -25,14 +25,14 @@ void Entry::setLname(const QString &value)
     lname = value;
 }
 
-QString Entry::getRessoure() const
+QString Entry::getRessource() const
 {
-    return ressoure;
+    return ressource;
 }
 
-void Entry::setRessoure(const QString &value)
+void Entry::setRessource(const QString &value)
 {
-    ressoure = value;
+    ressource = value;
 }
 
 QDate Entry::getDate() const
@@ -43,5 +43,9 @@ QDate Entry::getDate() const
 void Entry::setDate(const QDate &value)
 {
     date = value;
+}
+
+QString Entry::toString(){
+    return fname + " " + lname + " " + ressource + " " + date.toString();
 }
 

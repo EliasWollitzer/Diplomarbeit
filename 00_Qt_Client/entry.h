@@ -2,7 +2,7 @@
 #define ENTRY_H
 
 #include <mainwindow.h>
-#include <QObject>
+
 
 class Entry : public QObject
 {
@@ -16,11 +16,13 @@ public:
     QString getLname() const;
     void setLname(const QString &value);
 
-    QString getRessoure() const;
-    void setRessoure(const QString &value);
+    QString getRessource() const;
+    void setRessource(const QString &value);
 
     QDate getDate() const;
     void setDate(const QDate &value);
+
+    QString toString();
 
 signals:
 
@@ -31,7 +33,7 @@ public slots:
 private:
     QString fname;
     QString lname;
-    QString ressoure;
+    QString ressource;
     QDate date;
 };
 

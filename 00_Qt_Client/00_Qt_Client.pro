@@ -29,11 +29,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    entry.cpp
+    entry.cpp \
+    entrymodel.cpp \
+    newentry.cpp
 
 HEADERS += \
         mainwindow.h \
-    entry.h
+    entry.h \
+    entrymodel.h \
+    newentry.h \
+    newentry.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    newentry.ui
