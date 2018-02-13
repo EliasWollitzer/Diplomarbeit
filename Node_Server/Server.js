@@ -1,10 +1,6 @@
-import { isNullOrUndefined } from "util";
-
 var express = require("express");
 var mysql = require("mysql");
 var path = require("path");
-var utilis=require("util-is");
-var util = require("util");
 var bodyParser = require("body-parser");
 var expressValidator = require("express-validator");
 var app = express();
@@ -63,34 +59,36 @@ app.post("/sql_post/entry", function (req, res) {
     var Rid;
     var Did;
     console.log("POST ENTRY req: " + JSON.stringify(req.body));
-    isDepartmentDouble(req.body, function(err, cbDid){ //if double + sqlinsert + return ID
-        if (err) throw console.log("isDespartmentDouble failed: "+err) 
-        console.log("isDepartmentDouble: "+cbDid)
-        Did = cbDid //Department ID zum Client
-    });
-    isResourceDouble(req.body, function(err, cbRid){ //if double + sqlinsert + return ID
-        if (err) throw console.log("isResourceDouble failed: "+err)
-        console.log("isResourceDouble: "+cbRid)
-        Rid=cbRid //Resources ID zum Client
-    });
-    isPersonDouble(req.body,Did, function (err,cbPid) { //if double + sqlinsert + return ID
-        if (err) throw console.log("isPersonDouble failed: "+err) 
-        console.log("isPersonDouble: "+cbPid)
-        Pid=cbPid //Personen ID zum Client
-    });
-    insertSQL_Borrowed(req.body,Pid,Rid) // Termin mit Foreign Keys
-    
 
+    isDepartmentDouble(req.body, function (err, cbDid) { //if double + sqlinsert + return ID
+        if (err) throw console.log("isDespartmentDouble failed: " + err)
+        console.log("isDepartmentDouble: " + cbDid)
+        Did = cbDid //Department ID zum Client
+
+        isResourceDouble(req.body, function (err, cbRid) { //if double + sqlinsert + return ID
+            if (err) throw console.log("isResourceDouble failed: " + err)
+            console.log("isResourceDouble: " + cbRid)
+            Rid = cbRid //Resources ID zum Client
+
+            isPersonDouble(req.body, Did, function (err, cbPid) { //if double + sqlinsert + return ID
+                if (err) throw console.log("isPersonDouble failed: " + err)
+                console.log("isPersonDouble: " + cbPid)
+                Pid = cbPid //Personen ID zum Client
+
+                insertSQL_Borrowed(req.body, Pid, Rid) // Termin mit Foreign Keys
+            });
+        });
+    });
 });
 
 app.post("/sql_post/persons", function (req, res) {
     let Pid;
     console.log("POST PERSONS req: " + JSON.stringify(req.body));
 
-    isPersonDouble(req.body, function (err,cbPid) { //if double + sqlinsert
-        if (err) throw console.log("isPersonDouble failed: "+err) 
-        console.log("isPersonDouble: "+cbPid)
-        res.send(""+cbPid) //Personen ID zum Client
+    isPersonDouble(req.body, function (err, cbPid) { //if double + sqlinsert
+        if (err) throw console.log("isPersonDouble failed: " + err)
+        console.log("isPersonDouble: " + cbPid)
+        res.send("" + cbPid) //Personen ID zum Client
     });
 });
 
@@ -133,7 +131,7 @@ con.connect(function (err) {
 });
 //------------------------------------------select methods: ID suchen
 
-var isPersonDouble = function (req,Did, callback) { 
+var isPersonDouble = function (req, Did, callback) {
     var query;
     var Pid;
     var x;
@@ -153,7 +151,7 @@ var isPersonDouble = function (req,Did, callback) {
 
         if ((z) == 0) {//Wenn Name neu
             console.log("Person neu: " + req.firstName + " " + req.lastName)
-            insertSQL_Persons(req,Did);
+            insertSQL_Persons(req, Did);
 
             selectPid_SQL(req, function (err, cbPid) {
                 if (err) throw console.log("Select PID ERROR" + err);;
@@ -174,7 +172,7 @@ var isPersonDouble = function (req,Did, callback) {
         }
     });
 }
-var isResourceDouble = function (req, callback) { 
+var isResourceDouble = function (req, callback) {
     var query;
     var Rid;
     var x;
@@ -195,7 +193,7 @@ var isResourceDouble = function (req, callback) {
         if ((z) == 0) {//Wenn Resource neu
             console.log("Resource neu: " + req.resource)
             insertSQL_Resources(req);
-            selectRid_SQL(req, function(err, cbRid){
+            selectRid_SQL(req, function (err, cbRid) {
                 if (err) throw console.log("Select RID ERROR" + err);
                 console.log("CALLBACK RID in ResourceNew: " + cbRid)
                 Rid = cbRid;
@@ -204,7 +202,7 @@ var isResourceDouble = function (req, callback) {
 
         } else {//Wenn Resource doppelt
             console.log("Resource doppelt: " + req.resource)
-            selectRid_SQL(req, function(err, cbRid){
+            selectRid_SQL(req, function (err, cbRid) {
                 if (err) throw console.log("Select RID ERROR" + err);
                 console.log("CALLBACK RID in ResourceDouble: " + cbRid)
                 Rid = cbRid;
@@ -213,14 +211,14 @@ var isResourceDouble = function (req, callback) {
         }
     });
 }
-var isDepartmentDouble = function (req, callback) { 
+var isDepartmentDouble = function (req, callback) {
     var query;
     var Did;
     var x;
     var y;
     var z;
     query = "SELECT COUNT(section) as anz FROM Department " +
-        "WHERE section = '" + JSON.stringify(req.department).slice(1, -1) + "';"
+        "WHERE section = '" + JSON.stringify(req.section).slice(1, -1) + "';"
 
     console.log("SQLQuery: " + query);
     con.query(query, function (err, result) {
@@ -232,9 +230,9 @@ var isDepartmentDouble = function (req, callback) {
         console.log("D:SQL result ANZ: " + y[0].anz);
 
         if ((z) == 0) {//Wenn Department neu
-            console.log("Department neu: " + req.department)
+            console.log("Department neu: " + req.section)
             insertSQL_Department(req);
-            selectDid_SQL(req, function(err, cbDid){
+            selectDid_SQL(req, function (err, cbDid) {
                 if (err) throw console.log("Select DID ERROR" + err);
                 console.log("CALLBACK DID in DepartmentNew: " + cbDid)
                 Did = cbDid;
@@ -242,8 +240,8 @@ var isDepartmentDouble = function (req, callback) {
             });
 
         } else {//Wenn Department doppelt
-            console.log("Department doppelt: " + req.department)
-            selectDid_SQL(req, function(err, cbDid){
+            console.log("Department doppelt: " + req.section)
+            selectDid_SQL(req, function (err, cbDid) {
                 if (err) throw console.log("Select DID ERROR" + err);
                 console.log("CALLBACK DID in DepartmentDouble: " + cbDid)
                 Did = cbDid;
@@ -283,7 +281,7 @@ var selectRid_SQL = function (req, cb) { // return Rid
     console.log("SQL_Select_Resources: " + JSON.stringify(req));
 
     query = "SELECT Rid from Resources " +
-        "WHERE resource = '"+ JSON.stringify(req.resource).slice(1, -1)+"';"
+        "WHERE resource = '" + JSON.stringify(req.resource).slice(1, -1) + "';"
 
     console.log("SQLQuery: " + query);
     con.query(query, function (err, result) {
@@ -304,7 +302,7 @@ var selectDid_SQL = function (req, cb) { // return Rid
     console.log("SQL_Select_Department: " + JSON.stringify(req));
 
     query = "SELECT Did from Department " +
-        "WHERE section = '"+ JSON.stringify(req.department).slice(1, -1)+"';"
+        "WHERE section = '" + JSON.stringify(req.section).slice(1, -1) + "';"
 
     console.log("SQLQuery: " + query);
     con.query(query, function (err, result) {
@@ -314,7 +312,7 @@ var selectDid_SQL = function (req, cb) { // return Rid
         y = JSON.parse(x);
         Did = y[0].Did
         console.log("SQL Did: " + y[0].Did);
-        cb(null, Pid);
+        cb(null, Did);
     });
 }
 //------------------------------------------patch methods
@@ -335,17 +333,17 @@ function updateSQL_Borrowed(req) { // Nur Termin
     });
 }
 //------------------------------------------insert methods
-function insertSQL_Persons(req,Did) {
+function insertSQL_Persons(req, Did) {
     var query;
     var SQLDid;
     console.log("SQL_insert_Persons: " + JSON.stringify(req));
-    if(util.isNullOrUndefined(req.Did))
+    if (req.Did == null)
         SQLDid = Did
     else
         SQLDid = JSON.stringify(req.Did).slice(1, -1)
 
     query = "INSERT INTO Persons (Did,firstName,lastName)" +
-        " VALUES ('" +SQLDid+ "','" +
+        " VALUES ('" + SQLDid + "','" +
         JSON.stringify(req.firstName).slice(1, -1) + "','" +
         JSON.stringify(req.lastName).slice(1, -1) + "')";
 
@@ -355,25 +353,26 @@ function insertSQL_Persons(req,Did) {
         console.log("INSERT Person: " + JSON.stringify(req.firstName) + " done");
     });
 }
-function insertSQL_Borrowed(req,Pid,Rid) {
+function insertSQL_Borrowed(req, Pid, Rid) {
     var query;
     var SQLPid;
     var SQLRid;
 
-    if(util.isNullOrUndefined(req.Pid))
-    SQLPid = Pid
-else
-    SQLPid = JSON.stringify(req.Pid).slice(1, -1)
+    if (req.Pid == null)
+        SQLPid = Pid
+    else
+        SQLPid = JSON.stringify(req.Pid).slice(1, -1)
 
-    if(util.isUndefined(req.Rid))
-    SQLRid = Rid
-else
-    SQLRid = JSON.stringify(req.Rid).slice(1, -1)
+    if (req.Rid == null)
+        SQLRid = Rid
+    else
+        SQLRid = JSON.stringify(req.Rid).slice(1, -1)
+
     console.log("SQL_insert_Borrowed: " + JSON.stringify(req));
 
     query = "INSERT INTO Borrowed (Pid,Rid,description,datefrom,dateto)" +
-        " VALUES ('" + SQLPid+ "','" +
-        SQLRid+"','" +
+        " VALUES ('" + SQLPid + "','" +
+        SQLRid + "','" +
         JSON.stringify(req.description).slice(1, -1) + "','" +
         JSON.stringify(req.datefrom).slice(1, -1) + "','" +
         JSON.stringify(req.dateto).slice(1, -1) + "')";
