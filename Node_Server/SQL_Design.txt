@@ -1,4 +1,55 @@
-drop table Persons;
+/*
+create table serverTable(
+Id INT NOT NULL auto_increment,
+primary key (Id),
+firstName VARCHAR(20),
+lastName VARCHAR(20),
+reserved DATE,
+resource VARCHAR(20)
+);
+
+ insert into serverTable
+ (firstName,lastName,reserved,resource)
+ values
+ ('Elias','Wollitzer','2017-12-12','Raum'),
+ ('Sep','Aigner','2017-11-01','Raum'),
+ ('Franz','Mustermann','2018-01-02','Auto'),
+ ('Hans','Wurst','2017-10-23','Raum');
+ 
+ #select * from serverTable;
+ #drop table serverTable;
+
+
+ insert into Persons
+ (firstName,lastName)
+ values
+ ('Elias','Wollitzer'),
+ ('Sep','Aigner'),
+ ('Franz','Mustermann'),
+ ('Hans','Wurst');
+ 
+  insert into Events
+ (description,datefrom,dateto)
+ values
+ ('Besuch','2017-12-12','2018-01-02'),
+ ('Besprechung','2018-01-14','2018-01-18'),
+('Seminar','2018-01-22','2018-01-24');
+
+insert into Resources
+ (resource)
+ values
+ ('BesprechungsRaum 1'),
+ ('BesprechungsRaum 2'),
+  ('BesprechungsRaum 3');
+ 
+ insert into section
+ (sect)
+ values
+ ('Hardware'),
+ ('Software'),
+ ('Marketing');
+*//*
+ drop table Persons;
  drop table Borrowed;
  drop table Resources;
  drop table Department;
@@ -46,9 +97,9 @@ section VARCHAR(30)
   insert into Borrowed
  (Pid,Rid,description,datefrom,dateto)
  values
- ('3','1','Besuch','2017-12-12','2018-01-02'),
- ('3','1','Besprechung','2018-01-14','2018-01-18'),
-('1','2','Seminar','2018-01-22','2018-01-24');
+ ('3','1','Besuch','2017-12-12 13:45:10','2018-01-02 12:45:10'),
+ ('3','1','Besprechung','2018-01-14 11:45:10','2018-01-18 13:45:10'),
+('1','2','Seminar','2018-01-22 10:45:10','2018-01-24 16:45:10');
 
 insert into Resources
  (resource)
@@ -62,11 +113,63 @@ insert into Resources
  values
  ('Hardware'),
  ('Software');
- // Statements:
- // SQL GET gesucht nach Datum
-  SELECT * 
+   
+ SELECT * 
  FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep
  on Bor.Pid = Per.Pid
  and Bor.Rid = Res.Rid
  and Dep.Did=Per.Did 
  WHERE '2017'= year(datefrom) AND '12'= month(datefrom) AND '12'= day(datefrom);
+
+ SELECT * 
+ FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep
+ on Bor.Pid = Per.Pid
+ and Bor.Rid = Res.Rid
+ and Dep.Did=Per.Did ;
+
+ UPDATE Borrowed
+ SET datefrom = '2019-01-01 00:00:00', dateto = '2020-01-01 00:00:00'
+ where Entid = '2';
+
+ 
+  SELECT * 
+ FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep
+ on Bor.Pid = Per.Pid
+ and Bor.Rid = Res.Rid
+ and Dep.Did=Per.Did ;
+ 
+  SELECT Pid 
+ FROM Persons where firstname = 'Elia';
+ 
+   SELECT * 
+ FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep
+ on Bor.Pid = Per.Pid
+ and Bor.Rid = Res.Rid
+ and Dep.Did=Per.Did ;
+ 
+  insert into Persons
+ (Did,firstName,lastName)
+ values
+ ('2','Marc','Maier'),
+ ('2','Marc','Maier');
+
+
+
+#SELECT COUNT(firstName) as anz FROM Persons WHERE firstName = 'Mar' and lastName = 'Maier';
+
+  SELECT * FROM Persons;
+
+SELECT * FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep
+ on Bor.Pid = Per.Pid
+ and Bor.Rid = Res.Rid
+ and Dep.Did=Per.Did ; 
+ 
+ SELECT COUNT(resource) as anz FROM Resources WHERE resource = 'BesprechungsRaum 1';*/
+ 
+ 
+ /*DELETE FROM Borrowed WHERE Entid = '6';
+ */
+ SELECT * FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep
+ on Bor.Pid = Per.Pid
+ and Bor.Rid = Res.Rid
+ and Dep.Did=Per.Did ; 
