@@ -41,7 +41,7 @@ app.get('/sql_get', function (req, res) {
 //----------------------------------------SQL GET Resource Table
 app.get('/sql_get/resources', function (req, res) {
 
-    var sqlquery = "SELECT resource FROM Resources";
+    var sqlquery = "SELECT * FROM Resources";
 
     // return table
     con.query(sqlquery, function (err, result) {
@@ -111,36 +111,11 @@ app.post("/sql_post/department", function (req, res) {
     res.send("Insert Done");
 });
 //-----------------------------------------PATCH von Client: SQL_Update
-app.post("/sql_update/borrowed", function (req, res) { 
+app.patch("/sql_update/borrowed", function (req, res) {
     console.log("PATCH req: " + JSON.stringify(req.body));
 
     updateSQL_Borrowed(req.body);//!!!!!!!!!!!!!!!!description
-    res.send("UPDATE Done");
-});
-//-----------------------------------------DELETE methods
-app.delete("/sql_delete/entry", function(req, res){
-    console.log("DELETE req: "+JSON.stringify(req.body))
-    var Entid;
-    selectEntid_SQL(req, function (err, cbEntid) {
-        if (err) throw console.log("Select Entid ERROR" + err);
-        console.log("CALLBACK Entid in DELETE: " + cbEntid)
-        Entid = cbEntid;
-        callback(null, Entid)
-    });
-
-    query = "DELETE FROM Borrowed " +
-    "WHERE Entid = '" + Entid + "';";
-
-    con.query(query, function (err, result) {
-        if (err) throw err;
-        console.log("SQL result: " + result);
-        x = JSON.stringify(result);
-        y = JSON.parse(x);
-        Pid = y[0].Pid
-        console.log("SQL Pid: " + y[0].Pid);
-        cb(null, Pid);
-    });
-
+    res.send("Update Done");
 });
 //----------------------------------------- SQL_Connection
 var con = mysql.createConnection({
@@ -338,29 +313,6 @@ var selectDid_SQL = function (req, cb) { // return Rid
         Did = y[0].Did
         console.log("SQL Did: " + y[0].Did);
         cb(null, Did);
-    });
-}
-var selectEntid_SQL = function (req, cb) { // return Entid 
-    var query;
-    var x;
-    var y;
-    var Entid;
-    console.log("SQL_Select_Entid: " + JSON.stringify(req));
-
-    query = "SELECT Entid from Borrowed " +
-        "WHERE datefrom = '" + JSON.stringify(req.datefrom).slice(1, -1) + "' AND " +
-        "dateto = '" + JSON.stringify(req.dateto).slice(1, -1) + "' AND " +
-        "description = '" + JSON.stringify(req.description).slice(1, -1)+";"
-
-    console.log("SQLQuery: " + query);
-    con.query(query, function (err, result) {
-        if (err) throw err;
-        console.log("SQL result: " + result);
-        x = JSON.stringify(result);
-        y = JSON.parse(x);
-        Pid = y[0].Pid
-        console.log("SQL Entid: " + y[0].Pid);
-        cb(null, Pid);
     });
 }
 //------------------------------------------patch methods
