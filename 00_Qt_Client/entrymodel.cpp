@@ -37,6 +37,10 @@ QVariant EntryModel::data(const QModelIndex &index, int role) const
        return QVariant();
     }
 
+    if(entrylist.isEmpty()){
+        //return QVariant();
+    }
+
     switch(c){
         case 0: return entrylist.at(r)->getRessource();
                 break;
@@ -74,14 +78,93 @@ QString EntryModel::getColumnName(int section) const{
 }
 
 void EntryModel::http_post_entry(Entry* e){
+    qDebug("Funktion HTTPPost");
+    //HTTP
+
+    QEventLoop eventLoop;
+    QUrl localURL(QString(url + "sql_post/entry"));
+    QNetworkRequest request(localURL);
+    QNetworkAccessManager mgr;
+
+    QUrlQuery qu;
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    qu.addQueryItem("firstName", e->getFirstName().toLatin1());
+    qu.addQueryItem("lastName", e->getLastName().toLatin1());
+    qu.addQueryItem("resource", e->getRessource().toLatin1());
+    qu.addQueryItem("section", e->getSection().toLatin1());
+    qu.addQueryItem("description", e->getDescription().toLatin1());
+    qu.addQueryItem("datefrom", this->dateTimeToString(e->getDatefrom()).toLatin1());
+    qu.addQueryItem("dateto", this->dateTimeToString(e->getDateto()).toLatin1());
+
+    curDate = e->getDatefrom().date();
+
+    qDebug()<<"Query:"<< qu.toString();
+    QNetworkReply *reply = mgr.post(request, qu.toString(QUrl::FullyEncoded).toUtf8());
+
+    connect(reply, SIGNAL(finished(QNetworkReply*)), &eventLoop, SLOT(quit()));
+    connect(reply, SIGNAL(finished(QNetworkReply*)), this, SLOT(http_get_list()));
+
+
+    eventLoop.exec();
+}
+
+void EntryModel::http_add_component(QList<QString> list){
+    qDebug("addComponent");
+
+    QEventLoop eventLoop;
+    QNetworkAccessManager mgr;
+    QUrlQuery qu;
+
+
+    QString u = "sql_post/";
+
+    switch(list.size()){
+        case RESSOURCE:     u += "resources";
+                            qu.addQueryItem("resource",list.at(0).toLatin1());
+                            break;
+
+        case DEPARTMENT:    u += "department";
+                            qu.addQueryItem("section", list.at(0).toLatin1());
+                            break;
+
+        case PERSON:        u += "persons";
+                            qu.addQueryItem("firstName",list.at(0).toLatin1());
+                            qu.addQueryItem("lastName", list.at(1).toLatin1());
+                            qu.addQueryItem("department", list.at(3).toLatin1());
+                            break;
+    }
+    QNetworkRequest request(url + u);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    qDebug()<<"Query:"<< qu.toString();
+
+    QNetworkReply *reply = mgr.post(request, qu.toString(QUrl::FullyEncoded).toUtf8());
+    qDebug() << "add" << "vorfinished";
+
+    connect(reply, SIGNAL(finished(QNetworkReply*)), &eventLoop, SLOT(quit()));
+
+    eventLoop.exec();
 
 }
 
-void EntryModel::http_get_list(QString date){
+void EntryModel::http_get_list(){
+/*
+    //ADD
+    Entry* e = new Entry();
+    e->setFirstName("firstname");
+    e->setLastName("lastName");
+    e->setDatefrom(QDateTime::currentDateTime());
+    e->setDateto(QDateTime::currentDateTime());
+    e->setDescription("description");
+    e->setRessource("ressource");
+    e->setSection("section");
+    entrylist.append(e);
+*/
+    QString date = this->dateToString(curDate);
 
     QEventLoop eventLoop;
     QUrl localURL(QString(url + "sql_get"));
     QNetworkAccessManager mgr;
+
 
     QUrlQuery qu;
     qu.addQueryItem("date", date.toLatin1());
@@ -93,8 +176,6 @@ void EntryModel::http_get_list(QString date){
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     QNetworkReply *reply = mgr.get(request); // GET
 
-
-
     connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     connect(reply, SIGNAL (finished()), this , SLOT(init_list()));
 
@@ -104,15 +185,13 @@ void EntryModel::http_get_list(QString date){
 void EntryModel::http_get_ressources(){
 
     QEventLoop eventLoop;
-    QUrl localURL(QString(url + "get_ressources"));
+    QUrl localURL(QString(url + "sql_get/resources"));
     QNetworkAccessManager mgr;
 
     QNetworkRequest request(localURL);
 
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     QNetworkReply *reply = mgr.get(request); // GET
-
-
 
     connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     connect(reply, SIGNAL (finished()), this , SLOT(init_ressources()));
@@ -122,9 +201,13 @@ void EntryModel::http_get_ressources(){
 
 void EntryModel::init_ressources(){
 
+    ressourceList.clear();
+
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
 
     QByteArray response_data = reply->readAll();
+
+    qDebug(reply->readAll());
 
     QJsonDocument json = QJsonDocument::fromJson(response_data);
 
@@ -132,7 +215,7 @@ void EntryModel::init_ressources(){
 
     for(int i = 0; i < arr.size(); i++){
         QJsonObject o = arr.at(i).toObject();
-        ressourceList.append(o.value("").toString());        //ERROR
+        ressourceList.append(o.value("resource").toString());
     }
 }
 
@@ -146,13 +229,10 @@ void EntryModel::init_list(){
 
     QJsonArray arr = json.array();
 
-    //qDebug() << "array: " << arr;
+    qDebug() << "array: " << reply->readAll();
 
     rows = arr.size();
     columns = 3;
-
-
-    qDebug() << &entrylist << endl;
 
     entrylist.clear();
 
@@ -165,7 +245,6 @@ void EntryModel::init_list(){
         e->setLastName(o.value("lastName").toString());
         e->setRessource(o.value("resource").toString());
         e->setSection(o.value("section").toString());
-        e->setEntlID(o.value("Entlid").toString());
 
         QDateTime datefrom = this->stringToDateTime(o.value("datefrom").toString());
         QDateTime dateto = this->stringToDateTime(o.value("dateto").toString());
@@ -177,7 +256,7 @@ void EntryModel::init_list(){
     }
 
     for(int i = 0; i < entrylist.size(); i++){
-        qDebug() << "formArray" << entrylist[i]->toString();
+        qDebug() << "init_list" << entrylist[i]->toString();
     }
 
 }
@@ -202,5 +281,11 @@ QDateTime EntryModel::stringToDateTime(QString sdate){
 }
 
 QString EntryModel::dateToString(QDate d){
-    return "" + d.day() + d.month() + d.year();
+    return QString::number(d.year()) + "-" + QString::number(d.month()) + "-" + QString::number(d.day());
+}
+
+
+QString EntryModel::dateTimeToString(QDateTime dt){
+    return QString::number(dt.date().year()) + "-" +  QString::number(dt.date().month()) + "-" + QString::number(dt.date().day()) + " " + QString::number(dt.time().hour()) + ":" + QString::number(dt.time().minute()) + ":" + QString::number(dt.time().second());
+
 }

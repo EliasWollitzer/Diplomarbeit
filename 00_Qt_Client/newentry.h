@@ -20,7 +20,7 @@ public:
     explicit NewEntry(QWidget *parent = 0);
     ~NewEntry();
     void setupRessources();
-    void setName(QString fn, QString ln, QString dep);
+    void setEntry(Entry* e);
 
 private slots:
     void on_buttonBox_accepted();
@@ -34,10 +34,8 @@ private:
     int cntRessources;
     EntryModel* model;
     QButtonGroup* group;
+    Entry* entry;
 
-    QString firstName;
-    QString lastName;
-    QString department;
 
 };
 

@@ -3,9 +3,6 @@
 #include <QtCore>
 
 
-
-
-
 NewEntry::NewEntry(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::NewEntry)
@@ -23,19 +20,16 @@ NewEntry::~NewEntry()
 
 void NewEntry::on_buttonBox_accepted()
 {
-    Entry* e;
-    e->setFirstName(firstName);
-    e->setLastName(lastName);
-    e->setDatefrom(ui->dateTimeEditFROM->dateTime());
-    e->setDateto(ui->dateTimeEditTO->dateTime());
-    e->setDescription(ui->textEditDESC->textCursor().selectedText());
-    e->setSection(department);
-    //e->setRessource(model->ressourceList.at(group->checkedId()));
-    e->setRessource("");
+    entry->setDatefrom(ui->dateTimeEditFROM->dateTime());
+    entry->setDateto(ui->dateTimeEditTO->dateTime());
+    entry->setDescription(ui->textEditDESC->toPlainText());
+    //entry->setRessource(model->ressourceList.at(group->checkedId()));
+    entry->setRessource("Besprechungsraum 1");
 
-    qDebug() << "accepted" << e->toString();
 
-    model->http_post_entry(e);
+    //qDebug() << "accepted" << entry->toString() + group->id(ui->);
+
+    model->http_post_entry(entry);
     this->close();
 }
 
@@ -46,7 +40,7 @@ void NewEntry::on_buttonBox_rejected()
 
 void NewEntry::setupRessources(){
     model = EntryModel::getInstance();
-    cntRessources = 3; //model->ressourceList.size();
+    cntRessources = model->ressourceList.size();
 
     if(cntRessources == 0){
         return;
@@ -56,7 +50,7 @@ void NewEntry::setupRessources(){
     QRadioButton* button;
 
     for(int i; i < cntRessources; i++){
-        button = new QRadioButton("test");
+        button = new QRadioButton(model->ressourceList.at(i));
         ui->radioLayout->addWidget(button);
         group->addButton(button);
     }
@@ -64,8 +58,6 @@ void NewEntry::setupRessources(){
 
 }
 
-void NewEntry::setName(QString fn, QString ln, QString depar){
-    firstName = fn;
-    lastName = ln;
-    department = depar;
+void NewEntry::setEntry(Entry* e){
+    this->entry = e;
 }

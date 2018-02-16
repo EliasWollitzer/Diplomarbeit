@@ -9,6 +9,11 @@
 #include <QList>
 #include <entry.h>
 
+#define RESSOURCE 1
+#define DEPARTMENT 2
+#define PERSON 3
+
+
 class EntryModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -20,6 +25,7 @@ public:
     int columns;
     static QString url;
     QList <QString> ressourceList;
+    QDate curDate;
 
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const ;     //Pushes rows to the model
@@ -29,12 +35,14 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const ; //Sets column names
 
 
-    void http_get_list(QString date);   //Sends a GET request with the date to the server
+    void http_get_list();   //Sends a GET request with the date to the server
     void http_get_ressources();
     void http_post_entry(Entry* e);
+    void http_add_component(QList <QString> list);
 
     QDateTime stringToDateTime(QString sdate);
     QString dateToString(QDate d);
+    QString dateTimeToString(QDateTime dt);
 
 
 private:

@@ -2,6 +2,7 @@
 #define LOGIN_H
 
 #include <QMainWindow>
+#include "entry.h"
 
 namespace Ui {
 class Login;
@@ -16,20 +17,13 @@ public:
     ~Login();
 
     static int first;
+    Entry* entry;
 
-    QString getFirstName() const;
-    void setFirstName(const QString &value);
-
-    QString getLastName() const;
-    void setLastName(const QString &value);
+    void followedBy(int test);
+    QString toString();
 
     QString getPassword() const;
     void setPassword(const QString &value);
-
-    QString toString();
-
-    QString getDepartment() const;
-    void setDepartment(const QString &value);
 
 private slots:
     void on_buttonBox_accepted();
@@ -38,12 +32,11 @@ private slots:
 
     void on_lineEditPW_cursorPositionChanged(int arg1, int arg2);
 
+    bool testLogin();
+
 private:
     Ui::Login *ui;
-
-    QString firstName;
-    QString lastName;
-    QString department;
+    int ccase;
     QString password;
 
 };

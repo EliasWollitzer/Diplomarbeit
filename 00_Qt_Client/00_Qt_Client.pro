@@ -32,7 +32,8 @@ SOURCES += \
     entry.cpp \
     entrymodel.cpp \
     newentry.cpp \
-    login.cpp
+    login.cpp \
+    add.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -40,9 +41,11 @@ HEADERS += \
     entrymodel.h \
     newentry.h \
     newentry.h \
-    login.h
+    login.h \
+    add.h
 
 FORMS += \
         mainwindow.ui \
     newentry.ui \
-    login.ui
+    login.ui \
+    add.ui

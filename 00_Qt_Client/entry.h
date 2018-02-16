@@ -1,6 +1,10 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
+#define NEWENTRY 0
+#define ADD 1
+
+
 #include <mainwindow.h>
 
 
@@ -29,9 +33,6 @@ public:
     QDateTime getDateto() const;
     void setDateto(const QDateTime &value);
 
-    QString getEntlID() const;
-    void setEntlID(const QString &value);
-
     QString getDescription() const;
     void setDescription(const QString &value);
 
@@ -50,7 +51,6 @@ private:
     QString ressource;
     QString section;
     QString description;
-    QString entlID;
     QDateTime datefrom;
     QDateTime dateto;
 

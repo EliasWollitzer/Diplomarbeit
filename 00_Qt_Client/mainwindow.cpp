@@ -27,12 +27,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_calendarWidget_clicked(const QDate &date)
 {
-    QString d;
-    d = QString::number(date.year()) + "-" + QString::number(date.month()) + "-" + QString::number(date.day());
-    qDebug()<<"on_calendarWidget_clicked: "<< d;
-
     model = EntryModel::getInstance();
-    model->http_get_list(d);
+    model->curDate = date;
+
+    qDebug()<<"on_calendarWidget_clicked: "<< model->dateToString(date);
+
+    model->http_get_list();
     setTableConditions();
 }
 
@@ -40,12 +40,10 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
 
 void MainWindow::on_newEntryButton_clicked()
 {
-    QDateTime *dt = new QDateTime();
-    dt->setDate(QDate::currentDate());
-    dt->setTime(QTime::currentTime());
-    qDebug() << "datetime" << dt->toString();
+    qDebug() << "newEntryButton" << "clicked";
 
     l = new Login();
+    l->followedBy(NEWENTRY);
     l->show();
 }
 
@@ -53,6 +51,20 @@ void MainWindow::setTableConditions(){
 
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tableView->setModel(model);
+    //ui->tableView->close();
     ui->tableView->show();
+
 }
 
+
+void MainWindow::on_tableView_clicked(const QModelIndex &index)
+{
+
+}
+
+void MainWindow::on_addButton_clicked()
+{
+    l = new Login();
+    l->followedBy(ADD);
+    l->show();
+}

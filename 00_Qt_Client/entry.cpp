@@ -60,16 +60,6 @@ void Entry::setDateto(const QDateTime &value)
     dateto = value;
 }
 
-QString Entry::getEntlID() const
-{
-    return entlID;
-}
-
-void Entry::setEntlID(const QString &value)
-{
-    entlID = value;
-}
-
 QString Entry::getDescription() const
 {
     return description;
