@@ -51,7 +51,7 @@ void MainWindow::setTableConditions(){
 
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tableView->setModel(model);
-    //ui->tableView->close();
+    ui->tableView->close();
     ui->tableView->show();
 
 }
@@ -59,6 +59,7 @@ void MainWindow::setTableConditions(){
 
 void MainWindow::on_tableView_clicked(const QModelIndex &index)
 {
+    qDebug() << index.row() << index.column();
 
 }
 

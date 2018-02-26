@@ -2,7 +2,7 @@
 
 
 EntryModel* EntryModel::model = nullptr;
-QString EntryModel::url = "http://10.8.250.22:30000/";
+QString EntryModel::url = "http://10.8.250.21:30000/";
 
 
 EntryModel::EntryModel(QObject *parent) : QAbstractTableModel(parent), entrylist()
@@ -155,7 +155,7 @@ void EntryModel::http_get_list(){
     e->setDatefrom(QDateTime::currentDateTime());
     e->setDateto(QDateTime::currentDateTime());
     e->setDescription("description");
-    e->setRessource("ressource");
+    e->setRessource("ressource");ect: No such signal QNetworkReplyHttpImpl::finished(QNetworkRepl
     e->setSection("section");
     entrylist.append(e);
 */
@@ -196,6 +196,8 @@ void EntryModel::http_get_ressources(){
     connect(reply, SIGNAL(finished()), &eventLoop, SLOT(quit()));
     connect(reply, SIGNAL (finished()), this , SLOT(init_ressources()));
 
+
+
     eventLoop.exec();
 }
 
@@ -208,6 +210,7 @@ void EntryModel::init_ressources(){
     QByteArray response_data = reply->readAll();
 
     qDebug(reply->readAll());
+    //reply->deleteLater();
 
     QJsonDocument json = QJsonDocument::fromJson(response_data);
 
@@ -236,8 +239,10 @@ void EntryModel::init_list(){
 
     entrylist.clear();
 
+    Entry* e;
+
     for(int i = 0; i < arr.size(); i++){
-        Entry* e = new Entry();
+        e = new Entry();
 
         QJsonObject o = arr.at(i).toObject();
 
