@@ -1,6 +1,7 @@
 var express = require("express");
 var mysql = require("mysql");
 var path = require("path");
+var isempty = require('is-empty');
 var bodyParser = require("body-parser");
 var expressValidator = require("express-validator");
 var app = express();
@@ -17,6 +18,31 @@ app.use(function (req, res, next) { // Test
 app.get('/hello', function (req, res) {// pfad localhost:8080/hello
     res.send("Hello World");
 });
+//-----------------------------------------DELETE methods
+app.post("/sql_delete", function (req, res) {
+    console.log("DELETE req: " + JSON.stringify(req.body));
+
+    var Entid;
+    selectEntid_SQL(req.body, function (err, cbEntid) {
+        if (err) throw console.log("Select Entid ERROR" + err);
+        console.log("CALLBACK Entid in DELETE: " + cbEntid)
+        Entid = cbEntid;
+        if (Entid == "EMPTY") {
+            res.send("ERROR: entry not found")
+        } else {
+            query = "DELETE FROM Borrowed " +
+                "WHERE Entid = '" + Entid + "';";
+
+            con.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("SQL result DELETE: " + result);
+                console.log("DELETE DONE")
+                res.send("DELETE DONE")
+            });
+        }
+    });
+});
+
 //-------------------------------------------SQL_Get von Client nach Datum -> ganze Liste
 app.get('/sql_get', function (req, res) {
     console.log("Get String: " + JSON.stringify(req.query.date));
@@ -76,19 +102,29 @@ app.post("/sql_post/entry", function (req, res) {
                 Pid = cbPid //Personen ID zum Client
 
                 insertSQL_Borrowed(req.body, Pid, Rid) // Termin mit Foreign Keys
+                res.send("POST ENTRY DONE")
+
             });
         });
     });
 });
 
-app.post("/sql_post/persons", function (req, res) {
-    let Pid;
+app.post("/sql_post/persons", function (req, res) { // nur mit department möglich
+    var Pid;
+    var Did;
     console.log("POST PERSONS req: " + JSON.stringify(req.body));
 
-    isPersonDouble(req.body, function (err, cbPid) { //if double + sqlinsert
-        if (err) throw console.log("isPersonDouble failed: " + err)
-        console.log("isPersonDouble: " + cbPid)
-        res.send("" + cbPid) //Personen ID zum Client
+    selectDid_SQL(req.body, function (err, cbDid) {
+        if (err) throw console.log("Select DID ERROR" + err);
+        console.log("CALLBACK DID in Insert Persons: " + cbDid)
+        Did = cbDid
+
+        isPersonDouble(req.body, Did, function (err, cbPid) { //if double + sqlinsert
+            if (err) throw console.log("isPersonDouble failed: " + err)
+            console.log("isPersonDouble: " + cbPid)
+            Pid = cbPid
+            res.send("" + cbPid) //Personen ID zum Client
+        });
     });
 });
 
@@ -111,37 +147,24 @@ app.post("/sql_post/department", function (req, res) {
     res.send("Insert Done");
 });
 //-----------------------------------------PATCH von Client: SQL_Update
-app.post("/sql_update/borrowed", function (req, res) { 
+app.post("/sql_update/borrowed", function (req, res) {
+    var Entid
     console.log("PATCH req: " + JSON.stringify(req.body));
 
-    updateSQL_Borrowed(req.body);//!!!!!!!!!!!!!!!!description
-    res.send("UPDATE Done");
-});
-//-----------------------------------------DELETE methods
-app.delete("/sql_delete/entry", function(req, res){
-    console.log("DELETE req: "+JSON.stringify(req.body))
-    var Entid;
-    selectEntid_SQL(req, function (err, cbEntid) {
+    selectEntid_SQL(req.body, function (err, cbEntid) {//Vergleich mit bestehenden einträgen -> Entid
         if (err) throw console.log("Select Entid ERROR" + err);
-        console.log("CALLBACK Entid in DELETE: " + cbEntid)
+        console.log("CALLBACK Entid in Update borrowed: " + cbEntid)
         Entid = cbEntid;
-        callback(null, Entid)
+        if (Entid == 'EMPTY') {
+            res.send("UPDATE failed: entry not found")
+        } else {
+            updateSQL_Borrowed(req.body, Entid);
+            res.send("UPDATE done");
+        }
+
     });
-
-    query = "DELETE FROM Borrowed " +
-    "WHERE Entid = '" + Entid + "';";
-
-    con.query(query, function (err, result) {
-        if (err) throw err;
-        console.log("SQL result: " + result);
-        x = JSON.stringify(result);
-        y = JSON.parse(x);
-        Pid = y[0].Pid
-        console.log("SQL Pid: " + y[0].Pid);
-        cb(null, Pid);
-    });
-
 });
+
 //----------------------------------------- SQL_Connection
 var con = mysql.createConnection({
     host: "localhost",
@@ -176,6 +199,7 @@ var isPersonDouble = function (req, Did, callback) {
 
         if ((z) == 0) {//Wenn Name neu
             console.log("Person neu: " + req.firstName + " " + req.lastName)
+            console.log("DID in isDouble: " + Did)
             insertSQL_Persons(req, Did);
 
             selectPid_SQL(req, function (err, cbPid) {
@@ -183,6 +207,7 @@ var isPersonDouble = function (req, Did, callback) {
                 console.log("CALLBACK PID in PERSONNEW: " + cbPid);
                 Pid = cbPid;
                 callback(null, Pid)
+                return callback
             });
 
         } else {//Wenn Name doppelt
@@ -193,6 +218,7 @@ var isPersonDouble = function (req, Did, callback) {
                 console.log("CALLBACK PID in PERSONDOUBLE: " + cbPid)
                 Pid = cbPid;
                 callback(null, Pid)
+                return callback
             });
         }
     });
@@ -347,37 +373,50 @@ var selectEntid_SQL = function (req, cb) { // return Entid
     var Entid;
     console.log("SQL_Select_Entid: " + JSON.stringify(req));
 
-    query = "SELECT Entid from Borrowed " +
+    query = "SELECT Entid FROM Persons as Per " +
+        "JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep" +
+        " on Bor.Pid = Per.Pid" +
+        " and Bor.Rid = Res.Rid" +
+        " and Dep.Did=Per.Did " +
         "WHERE datefrom = '" + JSON.stringify(req.datefrom).slice(1, -1) + "' AND " +
         "dateto = '" + JSON.stringify(req.dateto).slice(1, -1) + "' AND " +
-        "description = '" + JSON.stringify(req.description).slice(1, -1)+";"
+        "resource = '" + JSON.stringify(req.resource).slice(1, -1) + "' AND " +
+        "description = '" + JSON.stringify(req.description).slice(1, -1) + "';"
 
     console.log("SQLQuery: " + query);
     con.query(query, function (err, result) {
-        if (err) throw err;
-        console.log("SQL result: " + result);
-        x = JSON.stringify(result);
-        y = JSON.parse(x);
-        Pid = y[0].Pid
-        console.log("SQL Entid: " + y[0].Pid);
-        cb(null, Pid);
+        if (err) throw err
+
+        if (isempty(result)) {
+            console.log("selectEntid: no entry found")
+            cb(null, "EMPTY")
+            return cb
+        } else {
+            x = JSON.stringify(result);
+            y = JSON.parse(x);
+            Entid = y[0].Entid
+            console.log("SQL result: " + result);
+            console.log("SQL Entid: " + Entid);
+            cb(null, Entid);
+        }
     });
 }
 //------------------------------------------patch methods
-function updateSQL_Borrowed(req) { // Nur Termin
+function updateSQL_Borrowed(req, Entid) { // Nur Termin
     var query;
     console.log("SQL_Update_Borrowed: " + JSON.stringify(req));
 
+    console.log("Entid in Update: " + Entid)
     query = "UPDATE Borrowed" +
-        " SET datefrom = '" + JSON.stringify(req.datefrom).slice(1, -1) + "', " +
-        "dateto = '" + JSON.stringify(req.dateto).slice(1, -1) + "', " +
-        "description = '" + JSON.stringify(req.description).slice(1, -1) + "' " +
-        "WHERE Entid = " + JSON.stringify(req.Entid).slice(1, -1) + ";"
+        " SET datefrom = '" + JSON.stringify(req.datefromNew).slice(1, -1) + "', " +
+        "dateto = '" + JSON.stringify(req.datetoNew).slice(1, -1) + "', " +
+        "description = '" + JSON.stringify(req.descriptionNew).slice(1, -1) + "' " +
+        "WHERE Entid = '" + JSON.stringify(Entid) + "';"
 
     console.log("SQLQuery: " + query);
     con.query(query, function (err, result) {
         if (err) throw err;
-        console.log("Update Datefrom, Dateto, description at ID: " + JSON.stringify(req.Entid) + " done");
+        console.log("Update Datefrom, Dateto, description at ID: " + JSON.stringify(Entid) + " done");
     });
 }
 //------------------------------------------insert methods
@@ -385,10 +424,13 @@ function insertSQL_Persons(req, Did) {
     var query;
     var SQLDid;
     console.log("SQL_insert_Persons: " + JSON.stringify(req));
-    if (req.Did == null)
+    if (req.Did == null) {
         SQLDid = Did
-    else
+        console.log("DID: " + SQLDid)
+    } else {
         SQLDid = JSON.stringify(req.Did).slice(1, -1)
+        console.log("DIDandere: " + SQLDid)
+    }
 
     query = "INSERT INTO Persons (Did,firstName,lastName)" +
         " VALUES ('" + SQLDid + "','" +
