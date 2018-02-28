@@ -47,13 +47,11 @@ app.post("/sql_delete", function (req, res) {
 app.get('/sql_get', function (req, res) {
     console.log("Get String: " + JSON.stringify(req.query.date));
     var date = req.query.date;
-    var datesp = date.split("-");
-    console.log("searched Date" + datesp);
+    console.log("searched Date" + date);
 
     var sqlquery = "SELECT * FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep " +
         "on Bor.Pid = Per.Pid and Bor.Rid = Res.Rid and Dep.Did = Per.Did " +
-        "WHERE '" + datesp[0] + "'= year(Bor.datefrom) AND '" + datesp[1] + "'= month(Bor.datefrom) AND '" + datesp[2] + "'= day(Bor.datefrom)";;
-
+        "WHERE ('" + date + "'>= DATE(datefrom)) AND ('"+date+"'<=DATE(dateto));"  
     // return table
     con.query(sqlquery, function (err, result) {
         if (err) throw err;
@@ -170,7 +168,8 @@ var con = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "root",
-    database: "data"
+    database: "data",
+    dateStrings : true
 });
 
 con.connect(function (err) {
