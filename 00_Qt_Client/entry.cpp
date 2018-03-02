@@ -5,6 +5,19 @@ Entry::Entry()
 
 }
 
+Entry* Entry::copyEntry(){
+    Entry* e = new Entry();
+    e->setDatefrom(this->getDatefrom());
+    e->setDateto(this->getDateto());
+    e->setDescription(this->getDescription());
+    e->setFirstName(this->getFirstName());
+    e->setLastName(this->getLastName());
+    e->setRessource(this->getRessource());
+    e->setSection(this->getSection());
+
+    return e;
+}
+
 
 QString Entry::toString(){
     return firstName + lastName + description + ressource + datefrom.toString() + dateto.toString();

@@ -7,6 +7,7 @@
 #include "newentry.h"
 #include <QApplication>
 #include "login.h"
+#include "edit.h"
 
 
 
@@ -60,6 +61,11 @@ void MainWindow::setTableConditions(){
 void MainWindow::on_tableView_clicked(const QModelIndex &index)
 {
     qDebug() << index.row() << index.column();
+
+    edit* e = new edit();
+    e->setEntry(model->getEntryAt(index.row()));
+    e->show();
+
 
 }
 

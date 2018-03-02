@@ -14,7 +14,7 @@ class Entry : public QObject
 public:
     Entry();
 
-
+    Entry* copyEntry();
 
     QString toString();
 

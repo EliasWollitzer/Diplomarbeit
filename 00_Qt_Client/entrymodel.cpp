@@ -201,6 +201,67 @@ void EntryModel::http_get_ressources(){
     eventLoop.exec();
 }
 
+void EntryModel::http_update_entry(Entry* e, Entry* oldEntry){
+
+    QEventLoop eventLoop;
+    QUrl localURL(QString(url + "sql_update/borrowed"));
+    QNetworkRequest request(localURL);
+    QNetworkAccessManager mgr;
+
+    QUrlQuery qu;
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    qu.addQueryItem("resource", e->getRessource().toLatin1());
+    qu.addQueryItem("descriptionNew", e->getDescription().toLatin1());
+    qu.addQueryItem("datefromNew", this->dateTimeToString(e->getDatefrom()).toLatin1());
+    qu.addQueryItem("datetoNew", this->dateTimeToString(e->getDateto()).toLatin1());
+    qu.addQueryItem("datefrom",this->dateTimeToString(oldEntry->getDatefrom()).toLatin1());
+    qu.addQueryItem("dateto",this->dateTimeToString(oldEntry->getDateto()).toLatin1());
+    qu.addQueryItem("description", oldEntry->getDescription().toLatin1());
+
+    qDebug()<<"Query:"<< qu.toString();
+    QNetworkReply *reply = mgr.post(request, qu.toString(QUrl::FullyEncoded).toUtf8());
+
+    connect(reply, SIGNAL(finished(QNetworkReply*)), &eventLoop, SLOT(quit()));
+    connect(reply, SIGNAL(finished(QNetworkReply*)), this, SLOT(update_successful()));
+
+
+    eventLoop.exec();
+}
+
+void EntryModel::http_delete_entry(Entry *e){
+
+    QEventLoop eventLoop;
+    QUrl localURL(QString(url + "sql_delete"));
+    QNetworkRequest request(localURL);
+    QNetworkAccessManager mgr;
+
+    QUrlQuery qu;
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    qu.addQueryItem("resource", e->getRessource().toLatin1());
+    qu.addQueryItem("datefrom",this->dateTimeToString(e->getDatefrom()).toLatin1());
+    qu.addQueryItem("dateto",this->dateTimeToString(e->getDateto()).toLatin1());
+    qu.addQueryItem("description", e->getDescription().toLatin1());
+
+    qDebug()<<"Query:"<< qu.toString();
+    QNetworkReply *reply = mgr.post(request, qu.toString(QUrl::FullyEncoded).toUtf8());
+
+    connect(reply, SIGNAL(finished(QNetworkReply*)), &eventLoop, SLOT(quit()));
+    connect(reply, SIGNAL(finished(QNetworkReply*)), this, SLOT(update_successful()));
+
+
+    eventLoop.exec();
+}
+
+void EntryModel::delete_successful(){
+    qDebug() << "delete successful" << "";
+}
+
+void EntryModel::update_successful(){
+    qDebug() << "update_successful" << "";
+}
+
 void EntryModel::init_ressources(){
 
     ressourceList.clear();
@@ -250,6 +311,7 @@ void EntryModel::init_list(){
         e->setLastName(o.value("lastName").toString());
         e->setRessource(o.value("resource").toString());
         e->setSection(o.value("section").toString());
+        e->setDescription(o.value("description").toString());
 
         QDateTime datefrom = this->stringToDateTime(o.value("datefrom").toString());
         QDateTime dateto = this->stringToDateTime(o.value("dateto").toString());
@@ -264,6 +326,10 @@ void EntryModel::init_list(){
         qDebug() << "init_list" << entrylist[i]->toString();
     }
 
+}
+
+Entry* EntryModel::getEntryAt(int index){
+    return entrylist.at(index);
 }
 
 QDateTime EntryModel::stringToDateTime(QString sdate){

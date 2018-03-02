@@ -39,11 +39,14 @@ public:
     void http_get_ressources();
     void http_post_entry(Entry* e);
     void http_add_component(QList <QString> list);
+    void http_update_entry(Entry* e, Entry* oldEntry);
+    void http_delete_entry(Entry* e);
 
     QDateTime stringToDateTime(QString sdate);
     QString dateToString(QDate d);
     QString dateTimeToString(QDateTime dt);
 
+    Entry* getEntryAt(int index);
 
 private:
 
@@ -59,6 +62,8 @@ signals:
 private slots:
     void init_list();   //Converts JSON to List of Entrys
     void init_ressources();
+    void update_successful();
+    void delete_successful();
 };
 
 #endif // ENTRYMODEL_H
