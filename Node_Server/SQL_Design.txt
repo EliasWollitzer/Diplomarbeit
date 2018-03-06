@@ -173,3 +173,9 @@ SELECT * FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Dep
  on Bor.Pid = Per.Pid
  and Bor.Rid = Res.Rid
  and Dep.Did=Per.Did ; 
+ 
+  SELECT * FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep
+ on Bor.Pid = Per.Pid
+ and Bor.Rid = Res.Rid
+ and Dep.Did=Per.Did
+ WHERE('2018-02-14' >= DATE(datefrom)) AND ('2018-04-14'<=DATE(dateto));
