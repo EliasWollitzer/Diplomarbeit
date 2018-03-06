@@ -51,7 +51,7 @@ app.get('/sql_get', function (req, res) {
 
     var sqlquery = "SELECT * FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep " +
         "on Bor.Pid = Per.Pid and Bor.Rid = Res.Rid and Dep.Did = Per.Did " +
-        "WHERE ('" + date + "'>= DATE(datefrom)) AND ('"+date+"'<=DATE(dateto));"  
+        "WHERE ('" + date + "'>= DATE(datefrom)) AND ('" + date + "'<=DATE(dateto));"
     // return table
     con.query(sqlquery, function (err, result) {
         if (err) throw err;
@@ -84,24 +84,48 @@ app.post("/sql_post/entry", function (req, res) {
     var Did;
     console.log("POST ENTRY req: " + JSON.stringify(req.body));
 
-    isDepartmentDouble(req.body, function (err, cbDid) { //if double + sqlinsert + return ID
-        if (err) throw console.log("isDespartmentDouble failed: " + err)
-        console.log("isDepartmentDouble: " + cbDid)
-        Did = cbDid //Department ID zum Client
+    isTimeareaFree(req.body, function (err, isFree) {
+        if (isFree == true) {
+            console.log("isFree: keine reservierungen vorhanden!")
+        } else {
+            let datefrom = isFree[0].datefrom;
+            let dateto = isFree[0].dateto;
+            console.log("isFree: bereits reserviert!: "+datefrom+"-"+dateto);
+            res.send(isFree);
+            return false;
+        }
 
-        isResourceDouble(req.body, function (err, cbRid) { //if double + sqlinsert + return ID
-            if (err) throw console.log("isResourceDouble failed: " + err)
-            console.log("isResourceDouble: " + cbRid)
-            Rid = cbRid //Resources ID zum Client
+        isEntryDouble(req.body, function (err, isDouble) {
 
-            isPersonDouble(req.body, Did, function (err, cbPid) { //if double + sqlinsert + return ID
-                if (err) throw console.log("isPersonDouble failed: " + err)
-                console.log("isPersonDouble: " + cbPid)
-                Pid = cbPid //Personen ID zum Client
+            if (isDouble == true) {
+                console.log("Entry already exists!!")
+                res.send("POST ENTRY FAILED")
+                return false;
+            }
+            else {
+                console.log("New Entry!!")
+            }
 
-                insertSQL_Borrowed(req.body, Pid, Rid) // Termin mit Foreign Keys
-                res.send("POST ENTRY DONE")
+            isDepartmentDouble(req.body, function (err, cbDid) { //if double + sqlinsert + return ID
+                if (err) throw console.log("isDespartmentDouble failed: " + err)
+                console.log("isDepartmentDouble: " + cbDid)
+                Did = cbDid //Department ID zum Client
 
+                isResourceDouble(req.body, function (err, cbRid) { //if double + sqlinsert + return ID
+                    if (err) throw console.log("isResourceDouble failed: " + err)
+                    console.log("isResourceDouble: " + cbRid)
+                    Rid = cbRid //Resources ID zum Client
+
+                    isPersonDouble(req.body, Did, function (err, cbPid) { //if double + sqlinsert + return ID
+                        if (err) throw console.log("isPersonDouble failed: " + err)
+                        console.log("isPersonDouble: " + cbPid)
+                        Pid = cbPid //Personen ID zum Client
+
+                        insertSQL_Borrowed(req.body, Pid, Rid) // Termin mit Foreign Keys
+                        res.send("POST ENTRY DONE")
+
+                    });
+                });
             });
         });
     });
@@ -169,14 +193,98 @@ var con = mysql.createConnection({
     user: "root",
     password: "root",
     database: "data",
-    dateStrings : true
+    dateStrings: true
 });
 
 con.connect(function (err) {
     if (err) throw err;
     console.log("Connected!")
 });
+//------------------------------------------select methods: freien Termin suchen
+var isTimeareaFree = function (req, callback) { // true -> bereich ist frei | false -> bereich bereits reserviert
+    var query;
+    var datefrom;
+    var dateto;
+
+    query = "SELECT COUNT(Entid) as anz FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep " +
+        "on Bor.Pid = Per.Pid and Bor.Rid = Res.Rid and Dep.Did = Per.Did " +
+        "WHERE not((('" + JSON.stringify(req.dateto).slice(1, -1) + "') <= datefrom) OR (dateto <= ('" + JSON.stringify(req.datefrom).slice(1, -1) + "')));";
+
+    console.log("SQLQuery: " + query);
+    con.query(query, function (err, result) {
+        if (err) throw err;
+        console.log("SQL COUNT(datefrom): " + result);
+        var x = JSON.stringify(result);
+        var y = JSON.parse(x);
+        var z = y[0].anz
+        console.log("isTimeareaFree: SQL result ANZ: " + y[0].anz);
+
+        if ((z) == 0) {//Wenn Zeitbereich frei
+            console.log("Zeitbereich ist frei: " + req.datefrom + " " + req.dateto)
+
+            callback(null, true)
+            return callback
+
+        } else {//Wenn Zeitbereich reserviert
+            query = "SELECT datefrom,dateto FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep " +
+                "on Bor.Pid = Per.Pid and Bor.Rid = Res.Rid and Dep.Did = Per.Did " +
+                "WHERE not((('" + JSON.stringify(req.dateto).slice(1, -1) + "') <= datefrom) OR (dateto <= ('" + JSON.stringify(req.datefrom).slice(1, -1) + "')));";
+
+            con.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Table Sent" + result);
+                var x = JSON.stringify(result)
+                var y = JSON.parse(x)
+                console.log(y)
+                datefrom = y[0].datefrom;
+                dateto = y[0].dateto;
+                var result = 
+                [{"isFree" : "0"},
+                {"datefrom": ""+datefrom+""},
+                {"dateto":""+dateto+""}]
+                console.log("Termine bereits vorhanden: " + datefrom + " " + dateto)
+
+                callback(null, result)
+                return callback
+            });
+        }
+    });
+}
 //------------------------------------------select methods: ID suchen
+var isEntryDouble = function (req, callback) { // true -> is double | false -> is new
+    var query;
+    var x;
+    var y;
+    var z;
+
+    query = "SELECT COUNT(datefrom) as anz FROM Borrowed " +
+        "WHERE datefrom = '" + JSON.stringify(req.datefrom).slice(1, -1) + "'" + " and dateto = '" + JSON.stringify(req.dateto).slice(1, -1) + "' and " +
+        "description = '" + JSON.stringify(req.description).slice(1, -1) + "';";
+
+    console.log("SQLQuery: " + query);
+    con.query(query, function (err, result) {
+        if (err) throw err;
+        console.log("SQL COUNT(datefrom): " + result);
+        x = JSON.stringify(result);
+        y = JSON.parse(x);
+        z = y[0].anz
+        console.log("B: SQL result ANZ: " + y[0].anz);
+
+
+        if ((z) == 0) {//Wenn entry neu
+            console.log("Eintrag neu: " + req.firstName + " " + req.lastName)
+
+            callback(null, false)
+            return callback
+
+        } else {//Wenn entry doppelt
+            console.log("Entry doppelt: " + req.firstName + " " + req.lastName)
+
+            callback(null, true)
+            return callback
+        }
+    });
+}
 
 var isPersonDouble = function (req, Did, callback) {
     var query;
