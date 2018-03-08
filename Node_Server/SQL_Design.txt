@@ -68,8 +68,8 @@ Pid INT NOT NULL,
 Rid INT NOT NULL,
 primary key (Entid,Pid,Rid),  
 description VARCHAR(30),
-datefrom DATE,
-dateto DATE
+datefrom DATETIME,
+dateto DATETIME
 );
  create table Resources(
 Rid INT NOT NULL auto_increment,
