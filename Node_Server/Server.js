@@ -62,7 +62,21 @@ app.get('/sql_get', function (req, res) {
         res.send(y)
     });
 });
-//----------------------------------------SQL GET Resource Table
+//----------------------------------------SQL GET Table
+app.get('/sql_get/department', function (req, res) {
+
+    var sqlquery = "SELECT section FROM Department";
+
+    // return table
+    con.query(sqlquery, function (err, result) {
+        if (err) throw err;
+        console.log("Table Sent" + result);
+        var x = JSON.stringify(result)
+        var y = JSON.parse(x)
+        console.log(y);
+        res.send(y)
+    });
+});
 app.get('/sql_get/resources', function (req, res) {
 
     var sqlquery = "SELECT * FROM Resources";
