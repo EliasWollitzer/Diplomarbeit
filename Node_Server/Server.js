@@ -258,7 +258,7 @@ var isTimeareaFree = function (req, callback) { // true -> bereich ist frei | fa
 
     query = "SELECT COUNT(Entid) as anz FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep " +
         "on Bor.Pid = Per.Pid and Bor.Rid = Res.Rid and Dep.Did = Per.Did " +
-        "WHERE not((('" + JSON.stringify(req.dateto).slice(1, -1) + "') <= datefrom) OR (dateto <= ('" + JSON.stringify(req.datefrom).slice(1, -1) + "')));";
+        "WHERE not((Res.resource != '"+ JSON.stringify(req.resource).slice(1, -1) + "') OR (('" + JSON.stringify(req.dateto).slice(1, -1) + "') <= datefrom) OR (dateto <= ('" + JSON.stringify(req.datefrom).slice(1, -1) + "')));";
 
     console.log("SQLQuery: " + query);
     con.query(query, function (err, result) {
@@ -278,7 +278,7 @@ var isTimeareaFree = function (req, callback) { // true -> bereich ist frei | fa
         } else {//Wenn Zeitbereich reserviert
             query = "SELECT datefrom,dateto FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep " +
                 "on Bor.Pid = Per.Pid and Bor.Rid = Res.Rid and Dep.Did = Per.Did " +
-                "WHERE not((('" + JSON.stringify(req.dateto).slice(1, -1) + "') <= datefrom) OR (dateto <= ('" + JSON.stringify(req.datefrom).slice(1, -1) + "')));";
+                "WHERE not((Res.resource != '"+ JSON.stringify(req.resource).slice(1, -1) + "') OR (('" + JSON.stringify(req.dateto).slice(1, -1) + "') <= datefrom) OR (dateto <= ('" + JSON.stringify(req.datefrom).slice(1, -1) + "')));";
 
             con.query(query, function (err, result) {
                 if (err) throw err;
