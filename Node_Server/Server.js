@@ -175,7 +175,7 @@ app.post("/sql_post/persons", function (req, res) { // nur mit department mögli
             if (err) throw console.log("isPersonDouble failed: " + err)
             console.log("isPersonDouble: " + cbPid)
             Pid = cbPid
-            res.send("" + cbPid) //Personen ID zum Client
+            res.send("Insert Done") //Personen ID zum Client
         });
     });
 });
