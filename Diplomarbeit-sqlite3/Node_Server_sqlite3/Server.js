@@ -103,6 +103,25 @@ app.get('/sql_get/department', function (req, res) {
         res.send(y)
     });
 });
+
+app.get('/sql_get/persons', function (req, res) {
+
+    var sqlquery = "select p.firstName, p.lastName, d.section from Persons as p join Department as d on p.Did = d.Did";
+
+    // return table
+    db.all(sqlquery, function (err, rows) {
+        if (err) throw err;
+        rows.forEach(function(row){
+            console.log(row)
+        })
+        console.log("Table Sent" + rows);
+        var x = JSON.stringify(rows)
+        var y = JSON.parse(x)
+        console.log(y);
+        res.send(y)
+    });
+});
+
 app.get('/sql_get/resources', function (req, res) {
 
     var sqlquery = "SELECT resource FROM Resources";
@@ -187,7 +206,7 @@ app.post("/sql_post/persons", function (req, res) { // nur mit department mögli
             if (err) throw console.log("isPersonDouble failed: " + err)
             console.log("isPersonDouble: " + cbPid)
             Pid = cbPid
-            res.send("" + cbPid) //Personen ID zum Client
+            res.send("Insert Done") //Personen ID zum Client
         });
     });
 });
@@ -201,14 +220,26 @@ app.post("/sql_post/borrowed", function (req, res) {
 app.post("/sql_post/resources", function (req, res) {
     console.log("POST req: " + JSON.stringify(req.body));
 
-    insertSQL_Resources(req.body);
-    res.send("Insert Done");
+    insertSQL_Resources(req.body, function(){
+        res.send("Insert Done");
+    });
+    
 });
 app.post("/sql_post/department", function (req, res) {
     console.log("POST req: " + JSON.stringify(req.body));
 
-    insertSQL_Department(req.body);
-    res.send("Insert Done");
+    insertSQL_Department(req.body, function(){
+        res.send("Insert Done");
+    });
+    
+});
+
+app.post("/sql_post/delete_data", function (req, res) {
+    console.log("POST req: " + JSON.stringify(req.body));
+
+    deleteSQL_all(req.body, function(){
+        res.send("All deleted")
+    })
 });
 //-----------------------------------------PATCH von Client: SQL_Update
 app.post("/sql_update/borrowed", function (req, res) {
@@ -222,8 +253,16 @@ app.post("/sql_update/borrowed", function (req, res) {
         if (Entid == 'EMPTY') {
             res.send("UPDATE failed: entry not found")
         } else {
-            updateSQL_Borrowed(req.body, Entid);
-            res.send("UPDATE done");
+            isTimeareaFreeForUpdate(req, function(cb){
+                console.log(JSON.stringify(cb))
+                if(cb){
+                    updateSQL_Borrowed(req.body, Entid);
+                    res.send("UPDATE done");
+                }else{
+                    res.send("Time collision")
+                }
+
+            })
         }
 
     });
@@ -237,7 +276,7 @@ var isTimeareaFree = function (req, callback) { // true -> bereich ist frei | fa
 
     query = "SELECT COUNT(Entid) as anz FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep " +
         "on Bor.Pid = Per.Pid and Bor.Rid = Res.Rid and Dep.Did = Per.Did " +
-        "WHERE not((('" + JSON.stringify(req.dateto).slice(1, -1) + "') <= datefrom) OR (dateto <= ('" + JSON.stringify(req.datefrom).slice(1, -1) + "')));";
+        "WHERE not((Res.resource != '"+ JSON.stringify(req.resource).slice(1, -1) + "') OR (('" + JSON.stringify(req.dateto).slice(1, -1) + "') <= datefrom) OR (dateto <= ('" + JSON.stringify(req.datefrom).slice(1, -1) + "')));";
 
     console.log("SQLQuery: " + query);
     db.all(query, function (err, rows) {
@@ -259,7 +298,7 @@ var isTimeareaFree = function (req, callback) { // true -> bereich ist frei | fa
         } else {//Wenn Zeitbereich reserviert
             query = "SELECT datefrom,dateto FROM Persons as Per JOIN Borrowed as Bor JOIN Resources AS Res JOIN Department as Dep " +
                 "on Bor.Pid = Per.Pid and Bor.Rid = Res.Rid and Dep.Did = Per.Did " +
-                "WHERE not((('" + JSON.stringify(req.dateto).slice(1, -1) + "') <= datefrom) OR (dateto <= ('" + JSON.stringify(req.datefrom).slice(1, -1) + "')));";
+                "WHERE not((Res.resource != '"+ JSON.stringify(req.resource).slice(1, -1) + "') OR (('" + JSON.stringify(req.dateto).slice(1, -1) + "') <= datefrom) OR (dateto <= ('" + JSON.stringify(req.datefrom).slice(1, -1) + "')));";
 
                 db.all(query, function (err, rows) {
                     if (err) throw err;
@@ -274,7 +313,8 @@ var isTimeareaFree = function (req, callback) { // true -> bereich ist frei | fa
                 var result = 
                 [{"isFree" : "0"},
                 {"datefrom": ""+datefrom+""},
-                {"dateto":""+dateto+""}]
+                {"dateto":""+dateto+""},
+                {"count":y.length}]
                 console.log("Termine bereits vorhanden: " + datefrom + " " + dateto)
 
                 callback(null, result)
@@ -282,6 +322,36 @@ var isTimeareaFree = function (req, callback) { // true -> bereich ist frei | fa
             });
         }
     });
+}
+
+var isTimeareaFreeForUpdate = function(req, callback){
+    var test = {}
+    test.dateto = req.body.datetoNew
+    test.datefrom = req.body.datefromNew
+    test.resource = req.body.resource
+    console.log(JSON.stringify(req.body))
+    console.log("test: " + JSON.stringify(test))
+    isTimeareaFree(test, function(err, isFree){
+        console.log(JSON.stringify(isFree))
+        console.log(JSON.stringify(req.body))
+        //console.log("TEST: " + req.body.dateto + isFree[2].dateto + req.body.datefrom + isFree[1].datefrom)
+        if(isFree == true){
+            console.log("isFree")
+            callback(true)
+        }else{
+            if(isFree[3].count == 1){
+                if(((req.body.dateto + ":00") == isFree[2].dateto) && ((req.body.datefrom + ":00") == isFree[1].datefrom)){
+                    console.log("count is 1")
+                    callback(true)
+                }else{
+                    callback(false)
+                }
+            }else{
+                console.log("mehrere")
+                callback(false)
+            }  
+        }
+    })
 }
 //------------------------------------------select methods: ID suchen
 var isEntryDouble = function (req, callback) { // true -> is double | false -> is new
@@ -549,10 +619,10 @@ var selectEntid_SQL = function (req, cb) { // return Entid
             cb(null, "EMPTY")
             return cb
         } else {
-            x = JSON.stringify(result);
+            x = JSON.stringify(rows);
             y = JSON.parse(x);
             Entid = y[0].Entid
-            console.log("SQL result: " + result);
+            console.log("SQL result: " + rows);
             console.log("SQL Entid: " + Entid);
             cb(null, Entid);
         }
@@ -598,7 +668,7 @@ function insertSQL_Persons(req, Did) {
         JSON.stringify(req.lastName).slice(1, -1) + "')";
 
     console.log("SQLQuery: " + query);
-    con.query(query, function (err, result) {
+    db.all(query, function (err, result) {
         if (err) throw err;
         console.log("INSERT Person: " + JSON.stringify(req.firstName) + " done");
     });
@@ -636,7 +706,7 @@ function insertSQL_Borrowed(req, Pid, Rid) {
         console.log("INSERT Borrow: " + JSON.stringify(req.description) + " done");
     });
 }
-function insertSQL_Resources(req) {
+function insertSQL_Resources(req,cb) {
     var query;
     console.log("SQL_insert_Resources: " + JSON.stringify(req));
 
@@ -650,9 +720,11 @@ function insertSQL_Resources(req) {
             console.log(row);
         })
         console.log("INSERT Resources: " + JSON.stringify(req.resource) + " done");
+        cb()
+        return
     });
 }
-function insertSQL_Department(req) {
+function insertSQL_Department(req,cb) {
     var query;
     console.log("SQL_insert_Department: " + JSON.stringify(req));
 
@@ -666,8 +738,40 @@ function insertSQL_Department(req) {
             console.log(row);
         })
         console.log("INSERT Department: " + JSON.stringify(req.section) + " done");
+        cb()
+        return
     });
 }
+
+function deleteSQL_all(req,cb){
+    var query
+    console.log("SQL_delete_All: " + JSON.stringify(req))
+    
+    if(req.test == "test"){
+        query = "DELETE FROM Borrowed"
+        db.all(query, function (err, result) {
+            if (err) throw err;
+            console.log(err)
+            query = "DELETE FROM Department" 
+            db.all(query, function (err, result){
+                if(err) throw err;
+                console.log(err)
+                query = "DELETE FROM Persons"
+                db.all(query, function (err, result){
+                    if(err) throw err;
+                    console.log(err)
+                    query = "DELETE FROM Resources"
+                    db.all(query,function(err, result){
+                        if(err) throw err;
+                        console.log(err)
+                        cb()
+                        return
+                    })
+                })
+            })
+        });
+    }
+}
 //
-app.listen(8080);
+app.listen(30000);
 
