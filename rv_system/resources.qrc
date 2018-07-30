@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/Gbackground.png</file>
+        <file>assets/Ginzinger_G_schwarz.png</file>
+        <file>assets/main.qml</file>
+        <file>assets/Home.qml</file>
+        <file>assets/Newentry.qml</file>
+        <file>assets/Add.qml</file>
+        <file>assets/Input.qml</file>
+	<file>assets/DateSelection.qml</file>
+        <file>assets/keyboard/Key.qml</file>
+        <file>assets/keyboard/Keyboard.qml</file>
+        <file>assets/keyboard/KeyboardItem.qml</file>
+        <file>assets/keyboard/keyboard_num.xml</file>
+        <file>assets/keyboard/keyboard_us.xml</file>
+        <file>assets/keyboard/keyboard_ru.xml</file>
+    </qresource>
+</RCC>
