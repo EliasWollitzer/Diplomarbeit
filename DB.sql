@@ -6,7 +6,7 @@ firstName VARCHAR(20),
 lastName VARCHAR(20)
 );
 
- create table Borrowed(
+create table Borrowed(
 Entid INT NOT NULL auto_increment,
 Pid INT NOT NULL,
 Rid INT NOT NULL,
@@ -21,7 +21,7 @@ primary key (Rid),
 resource VARCHAR(30)
 );
 
- create table Department(
+create table Department(
 Did INT NOT NULL auto_increment,
 primary key (Did),
 section VARCHAR(30)
@@ -31,9 +31,9 @@ insert into Persons
  (Did,firstName,lastName)
  values
  ('1','Elias','Wollitzer'),
- ('1','Sep','Aigner'),
+ ('1','Johannes','Aigner'),
  ('2','Franz','Mustermann'),
- ('2','Hans','Wurst');
+ ('2','Frida','Musterfrau');
 
  
   insert into Borrowed
